@@ -1,0 +1,42 @@
+; Engine configuration file. Pinned to Godot 4.3 (GL Compatibility renderer for widest Android support).
+config_version=5
+
+[application]
+
+config/name="DRIVE X"
+config/description="3D arcade racing game for Android"
+run/main_scene="res://scenes/Main.tscn"
+config/features=PackedStringArray("4.3", "GL Compatibility")
+run/max_fps=60
+config/icon="res://icon.svg"
+config/quit_on_go_back=false
+
+[autoload]
+
+GameData="*res://scripts/autoload/GameData.gd"
+AudioManager="*res://scripts/autoload/AudioManager.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=4
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[physics]
+
+common/physics_ticks_per_second=60
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
+lights_and_shadows/directional_shadow/size=2048
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=1
+environment/defaults/default_clear_color=Color(0.03, 0.04, 0.09, 1)
