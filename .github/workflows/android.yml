@@ -41,6 +41,9 @@ jobs:
             echo "HOME=$HOME"
           } | tee logs/environment.log
 
+      - name: Retire old v1 files if present (moves, never deletes)
+        run: bash tools/migrate_from_v1.sh 2>&1 | tee logs/migrate.log
+
       - name: Validate repository layout
         run: bash tools/validate_repo.sh 2>&1 | tee logs/validate_repo.log; test "${PIPESTATUS[0]}" -eq 0
 

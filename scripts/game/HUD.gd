@@ -1,5 +1,5 @@
-class_name OpenWorldHUD
-extends Control
+class_name HUD
+extends CanvasLayer
 ## All in-game UI: foot controls (stick, punch, kick, block, enter), car controls
 ## (steer, gas, brake, nitro, drift, exit), minimap, race panel, pause and results.
 
@@ -43,11 +43,11 @@ var _b_nitro: TouchButton
 var _b_drift: TouchButton
 var _pause: Control
 var _results: Control
-var _prev: Dictionary = {}
-var _flash_t: float = 0.0
-var _center_t: float = 0.0
-var _hint_t: float = 0.0
-var _map_t: float = 0.0
+var _prev := {}
+var _flash_t := 0.0
+var _center_t := 0.0
+var _hint_t := 0.0
+var _map_t := 0.0
 
 
 func _ready() -> void:
@@ -75,18 +75,18 @@ func _place(parent: Control, c: Control, anchor: Vector2, pos: Vector2, sz: Vect
 
 
 func _lbl(text: String, size: int, color: Color, align: int = HORIZONTAL_ALIGNMENT_LEFT) -> Label:
-    var label: Label = UIKit.label(text, size, color, align)
-    label.add_theme_constant_override("outline_size", 6)
-    label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
-    return label
+    var l := UIKit.label(text, size, color, align)
+    l.add_theme_constant_override("outline_size", 6)
+    l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+    return l
 
 
 func _layer() -> Control:
-    var control := Control.new()
-    UIKit.full(control)
-    control.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    _root.add_child(control)
-    return control
+    var c := Control.new()
+    UIKit.full(c)
+    c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _root.add_child(c)
+    return c
 
 
 func _build() -> void:
@@ -94,9 +94,7 @@ func _build() -> void:
     UIKit.full(pad)
     pad.anchor_left = 0.4
     pad.offset_left = 0.0
-    pad.looked.connect(func(d: Vector2) -> void:
-        look_moved.emit(d)
-    )
+    pad.looked.connect(func(d: Vector2) -> void: look_moved.emit(d))
     _root.add_child(pad)
 
     _foot = _layer()
@@ -108,7 +106,6 @@ func _build() -> void:
     _health = UIKit.bar(1.0, UIKit.BAD)
     _health.custom_minimum_size = Vector2(220, 16)
     _place(_foot, _health, Vector2(0, 0), Vector2(24, 54), Vector2(220, 16))
-
     minimap = MiniMap.new()
     _place(top, minimap, Vector2(0, 0), Vector2(24, 82), Vector2(170, 170))
     _place(top, UIKit.button(Lang.t("btn.cam"), func() -> void: camera_pressed.emit(), Vector2(90, 64), 22), Vector2(1, 0), Vector2(-290, 18), Vector2(90, 64))
@@ -135,7 +132,7 @@ func _build() -> void:
     _lbl_wrong.visible = false
     _place(top, _lbl_wrong, Vector2(0.5, 0.3), Vector2(-320, 0), Vector2(640, 70))
 
-    # On foot controls.
+    # --- on foot
     _stick = Joystick.new()
     _place(_foot, _stick, Vector2(0, 1), Vector2(40, -250), Vector2(210, 210))
     _b_punch = TouchButton.new(Lang.t("btn.punch"), UIKit.ACCENT)
@@ -148,7 +145,7 @@ func _build() -> void:
     _place(_foot, _b_enter, Vector2(1, 1), Vector2(-250, -440), Vector2(210, 100))
     _b_enter.visible = false
 
-    # Driving controls.
+    # --- driving
     _b_left = TouchButton.new("", Color(0.6, 0.8, 1.0), "left")
     _place(_car, _b_left, Vector2(0, 1), Vector2(30, -200), Vector2(170, 170))
     _b_right = TouchButton.new("", Color(0.6, 0.8, 1.0), "right")
@@ -177,12 +174,10 @@ func _build_pause() -> void:
     UIKit.full(_pause)
     _pause.visible = false
     _root.add_child(_pause)
-
     var dim := ColorRect.new()
     UIKit.full(dim)
     dim.color = Color(0, 0, 0, 0.65)
     _pause.add_child(dim)
-
     var center := CenterContainer.new()
     UIKit.full(center)
     _pause.add_child(center)
@@ -190,33 +185,30 @@ func _build_pause() -> void:
     box.add_theme_constant_override("separation", 14)
     center.add_child(box)
     box.add_child(UIKit.label(Lang.t("pause.title"), 64, UIKit.ACCENT, HORIZONTAL_ALIGNMENT_CENTER))
-    box.add_child(UIKit.button(Lang.t("pause.resume"), func() -> void:
-        set_paused(false)
-    ))
+    box.add_child(UIKit.button(Lang.t("pause.resume"), func() -> void: set_paused(false)))
     box.add_child(UIKit.button(Lang.t("pause.menu"), func() -> void:
         get_tree().paused = false
-        quit_pressed.emit()
-    ))
+        quit_pressed.emit()))
 
 
-# Mode / pause.
-func set_mode(mode: String) -> void:
-    _foot.visible = mode == "foot"
-    _car.visible = mode == "car"
+# --- mode / pause -------------------------------------------------------------------------
+func set_mode(m: String) -> void:
+    _foot.visible = m == "foot"
+    _car.visible = m == "car"
 
 
-func set_paused(paused: bool) -> void:
-    if _results != null and paused:
+func set_paused(p: bool) -> void:
+    if _results != null and p:
         return
-    get_tree().paused = paused
-    _pause.visible = paused
-    AudioManager.pause_engine(paused)
+    get_tree().paused = p
+    _pause.visible = p
+    AudioManager.pause_engine(p)
 
 
 func _input(event: InputEvent) -> void:
     if event is InputEventKey and event.pressed and not event.echo:
-        var key: int = (event as InputEventKey).keycode
-        if key == KEY_ESCAPE or key == KEY_P:
+        var k := (event as InputEventKey).keycode
+        if k == KEY_ESCAPE or k == KEY_P:
             set_paused(not get_tree().paused)
 
 
@@ -225,7 +217,7 @@ func _notification(what: int) -> void:
         set_paused(not get_tree().paused)
 
 
-# Polled input.
+# --- polled input --------------------------------------------------------------------------
 func stick() -> Vector2:
     return _stick.value
 
@@ -255,13 +247,13 @@ func drift_held() -> bool:
 
 
 func _edge(id: String, btn: TouchButton, sig: Signal) -> void:
-    var now: bool = btn.pressed and btn.is_visible_in_tree()
+    var now := btn.pressed and btn.is_visible_in_tree()
     if now and not bool(_prev.get(id, false)):
         sig.emit()
     _prev[id] = now
 
 
-# Output.
+# --- output --------------------------------------------------------------------------------
 func set_countdown(text: String, secs: float = 1.2) -> void:
     _lbl_center.text = text
     _center_t = secs
@@ -277,12 +269,12 @@ func hint(text: String, secs: float = 4.0) -> void:
     _hint_t = secs
 
 
-func set_enter_visible(visible: bool) -> void:
-    _b_enter.visible = visible
+func set_enter_visible(v: bool) -> void:
+    _b_enter.visible = v
 
 
-func set_exit_visible(visible: bool) -> void:
-    _b_exit.visible = visible
+func set_exit_visible(v: bool) -> void:
+    _b_exit.visible = v
 
 
 func update_status(coins: int, health_ratio: float, kmh: float, nitro: float, wrong_way: bool) -> void:
@@ -324,23 +316,20 @@ func _process(delta: float) -> void:
         _hint_t -= delta
         if _hint_t <= 0.0:
             _lbl_hint.text = ""
-
     _edge("enter", _b_enter, enter_pressed)
     _edge("exit", _b_exit, exit_pressed)
     _edge("punch", _b_punch, punch_pressed)
     _edge("kick", _b_kick, kick_pressed)
 
 
-func show_results(data: Dictionary) -> void:
+func show_results(d: Dictionary) -> void:
     _results = Control.new()
     UIKit.full(_results)
     _root.add_child(_results)
-
     var dim := ColorRect.new()
     UIKit.full(dim)
     dim.color = Color(0, 0, 0, 0.7)
     _results.add_child(dim)
-
     var center := CenterContainer.new()
     UIKit.full(center)
     _results.add_child(center)
@@ -349,20 +338,13 @@ func show_results(data: Dictionary) -> void:
     var box := VBoxContainer.new()
     box.add_theme_constant_override("separation", 10)
     panel.add_child(box)
-
-    var place: int = int(data.get("position", 1))
-    var total: int = int(data.get("total", 1))
-    var race_time: float = float(data.get("time", 0.0))
-    var best_lap: float = float(data.get("best_lap", 0.0))
-    var reward: int = int(data.get("reward", 0))
-
+    var place := int(d["position"])
     box.add_child(UIKit.label(Lang.t("race.victory") if place == 1 else Lang.t("race.finished"), 56, UIKit.ACCENT, HORIZONTAL_ALIGNMENT_CENTER))
-    box.add_child(UIKit.label(Lang.t("race.position", [place, total]), 38, UIKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER))
-    box.add_child(UIKit.label(Lang.t("race.time", [UIKit.fmt_time(race_time)]), 30, UIKit.CYAN, HORIZONTAL_ALIGNMENT_CENTER))
-    box.add_child(UIKit.label(Lang.t("race.best", [UIKit.fmt_time(best_lap)]), 28, UIKit.DIM, HORIZONTAL_ALIGNMENT_CENTER))
-    box.add_child(UIKit.label(Lang.t("race.reward", [reward]), 30, Color(1.0, 0.85, 0.2), HORIZONTAL_ALIGNMENT_CENTER))
+    box.add_child(UIKit.label(Lang.t("race.position", [place, int(d["total"])]), 38, UIKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER))
+    box.add_child(UIKit.label(Lang.t("race.time", [UIKit.fmt_time(float(d["time"]))]), 30, UIKit.CYAN, HORIZONTAL_ALIGNMENT_CENTER))
+    box.add_child(UIKit.label(Lang.t("race.best", [UIKit.fmt_time(float(d["best_lap"]))]), 28, UIKit.DIM, HORIZONTAL_ALIGNMENT_CENTER))
+    box.add_child(UIKit.label(Lang.t("race.reward", [int(d["reward"])]), 30, Color(1.0, 0.85, 0.2), HORIZONTAL_ALIGNMENT_CENTER))
     box.add_child(UIKit.button(Lang.t("common.continue"), func() -> void:
         _results.queue_free()
         _results = null
-        results_closed.emit()
-    ))
+        results_closed.emit()))

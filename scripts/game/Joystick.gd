@@ -15,7 +15,7 @@ func _gui_input(event: InputEvent) -> void:
         var t := event as InputEventScreenTouch
         if t.pressed and _touch == -1:
             _touch = t.index
-            _set(t.position)
+            _update_value(t.position)
             accept_event()
         elif not t.pressed and t.index == _touch:
             _touch = -1
@@ -25,11 +25,11 @@ func _gui_input(event: InputEvent) -> void:
     elif event is InputEventScreenDrag:
         var d := event as InputEventScreenDrag
         if d.index == _touch:
-            _set(d.position)
+            _update_value(d.position)
             accept_event()
 
 
-func _set(p: Vector2) -> void:
+func _update_value(p: Vector2) -> void:
     var d := (p - size * 0.5) / (size.x * 0.4)
     d = d.limit_length(1.0)
     value = Vector2(d.x, -d.y)

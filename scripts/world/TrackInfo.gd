@@ -1,4 +1,4 @@
-class_name WorldTrackInfo
+class_name TrackInfo
 extends RefCounted
 ## Runtime description of a track centreline (closed loop, evenly spaced points).
 

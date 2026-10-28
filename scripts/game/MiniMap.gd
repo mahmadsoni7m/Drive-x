@@ -1,4 +1,4 @@
-class_name OpenWorldMiniMap
+class_name MiniMap
 extends Control
 ## Shows a window of the pre-rendered world map around the player (north-up).
 
