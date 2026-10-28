@@ -227,7 +227,7 @@ func _key(a: int, b: int) -> float:
 
 func _read_input() -> void:
     if mode == Mode.FOOT:
-        var s := hud.stick()
+        var s: Vector2 = hud.stick()
         var v := Vector2(s.x + _key(KEY_D, KEY_RIGHT) - _key(KEY_A, KEY_LEFT), s.y + _key(KEY_W, KEY_UP) - _key(KEY_S, KEY_DOWN)).limit_length(1.0)
         player.move_dir = Basis(Vector3.UP, cam.yaw) * Vector3(v.x, 0.0, -v.y)
         player.blocking = hud.block_held() or Input.is_key_pressed(KEY_Q)
