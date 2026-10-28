@@ -1,4 +1,4 @@
-class_name TouchButton
+class_name OpenWorldTouchButton
 extends Control
 ## Multi-touch-safe on-screen button: tracks its own finger index so steering, gas, brake,
 ## nitro and drift can all be held simultaneously. Mouse works too (touch is emulated from mouse).
