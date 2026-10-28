@@ -1,4 +1,3 @@
-class_name CarData
 extends RefCounted
 ## Car stats + upgrade math. The catalogue itself lives in content/cars/*.json (see Content).
 
