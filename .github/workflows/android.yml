@@ -105,19 +105,32 @@ jobs:
       - name: Import project (build class cache)
         run: |
           godot --headless --path . --import 2>&1 | tee logs/import.log || true
-          # Second pass guarantees global class names are registered before scripts are parsed.
           godot --headless --path . --import 2>&1 | tee -a logs/import.log || true
           if grep -E "SCRIPT ERROR|Parse Error" logs/import.log; then
             echo "::error::GDScript errors found during import"; exit 1
           fi
 
-      - name: Self-test (scripts, cars, tracks, physics)
+      - name: Self-test (content, Tajik text, models, world, physics, combat)
         run: |
           godot --headless --path . --script res://tools/self_test.gd 2>&1 | tee logs/self_test.log
           test "${PIPESTATUS[0]}" -eq 0
           grep -q "SELFTEST OK" logs/self_test.log
           if grep -E "SCRIPT ERROR|Parse Error" logs/self_test.log; then
             echo "::error::GDScript errors during self-test"; exit 1
+          fi
+
+      - name: Smoke test - menu scene runs
+        run: |
+          timeout 180 godot --headless --path . --scene res://scenes/Main.tscn --quit-after 120 2>&1 | tee logs/smoke_menu.log || true
+          if grep -E "SCRIPT ERROR|Parse Error" logs/smoke_menu.log; then
+            echo "::error::Runtime script errors in the menu scene"; exit 1
+          fi
+
+      - name: Smoke test - open world runs
+        run: |
+          timeout 300 godot --headless --path . --scene res://scenes/Game.tscn --quit-after 240 2>&1 | tee logs/smoke_world.log || true
+          if grep -E "SCRIPT ERROR|Parse Error" logs/smoke_world.log; then
+            echo "::error::Runtime script errors in the open world"; exit 1
           fi
 
       - name: Export APK
@@ -128,7 +141,7 @@ jobs:
             echo "::error::Godot reported an export error (see logs/export.log)"; exit 1
           fi
 
-      - name: Verify APK
+      - name: Verify APK and that JSON content is packed
         run: |
           if [ ! -s "$APK_PATH" ]; then echo "::error::APK was not produced"; exit 1; fi
           SIZE=$(stat -c %s "$APK_PATH")
@@ -137,6 +150,11 @@ jobs:
           unzip -tq "$APK_PATH"
           unzip -l "$APK_PATH" | grep -q "AndroidManifest.xml"
           unzip -l "$APK_PATH" | grep -q "classes.dex"
+          godot --headless --path . --export-pack "$EXPORT_PRESET" build/content-check.pck 2>&1 | tee logs/export_pack.log || true
+          for f in content/index.json content/cars/gt_rookie.json content/locale/tg.json content/races/ring_highway.json; do
+            if ! grep -aq "$f" build/content-check.pck; then echo "::error::$f is missing from the exported package"; exit 1; fi
+          done
+          rm -f build/content-check.pck
           sha256sum "$APK_PATH" | tee logs/apk.sha256
 
       - name: Upload APK
@@ -147,6 +165,28 @@ jobs:
           path: build/DRIVE-X-debug.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Show Godot logs
+        if: always()
+        run: |
+          NOISE='Parameter "m" is null|mesh_get_surface_count|leaked at exit|ObjectDB|cleanup \(core|PagedAllocator|paged_allocator'
+          {
+            echo "## Godot logs"
+            for f in logs/import.log logs/self_test.log logs/smoke_menu.log logs/smoke_world.log logs/export.log; do
+              [ -f "$f" ] || continue
+              echo "### $f"
+              echo '```'
+              grep -E "SCRIPT ERROR|Parse Error|FAIL|SELFTEST|content problem|missing Tajik|ERROR:|WARNING:" "$f" | grep -Ev "$NOISE" | head -n 60 || true
+              echo '```'
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          for f in logs/*.log; do
+            [ -f "$f" ] || continue
+            echo "::group::$f (errors only, last 60)"
+            grep -E "SCRIPT ERROR|Parse Error|FAIL|SELFTEST|content problem|missing Tajik|ERROR:" "$f" | grep -Ev "$NOISE" | tail -n 60 || true
+            echo "::endgroup::"
+          done
+          grep -hE "SCRIPT ERROR|Parse Error|FAIL " logs/*.log 2>/dev/null | grep -Ev "$NOISE" | head -n 10 | while read -r line; do echo "::error::$line"; done || true
 
       - name: Upload build logs
         if: always()

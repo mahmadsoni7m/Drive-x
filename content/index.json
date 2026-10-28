@@ -1,0 +1,52 @@
+{
+  "cars": [
+    "gt_rookie",
+    "street_fox",
+    "apex_r",
+    "viper_s",
+    "phantom_x"
+  ],
+  "outfits": [
+    "top_tshirt_white",
+    "top_tshirt_red",
+    "top_hoodie_blue",
+    "top_jacket_black",
+    "top_chapan",
+    "bottom_jeans_blue",
+    "bottom_pants_black",
+    "bottom_shorts_khaki",
+    "shoes_sneakers_white",
+    "shoes_sneakers_red",
+    "shoes_boots_brown",
+    "hat_cap_black",
+    "hat_cap_red",
+    "hat_toqi",
+    "npc_top_green",
+    "npc_top_yellow",
+    "npc_top_gray",
+    "npc_top_pink",
+    "npc_skirt_dark",
+    "npc_pants_brown",
+    "fighter_top_black",
+    "fighter_top_red",
+    "fighter_pants_camo",
+    "fighter_boots_black"
+  ],
+  "characters": [
+    "npc_man_a",
+    "npc_man_b",
+    "npc_man_c",
+    "npc_woman_a",
+    "npc_woman_b",
+    "npc_man_d",
+    "fighter_a",
+    "fighter_b",
+    "fighter_c"
+  ],
+  "races": [
+    "ring_highway",
+    "city_loop",
+    "mountain_south",
+    "mountain_east"
+  ]
+}

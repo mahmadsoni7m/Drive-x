@@ -18,24 +18,21 @@ func _ready() -> void:
     v.add_theme_constant_override("separation", 16)
     v.alignment = BoxContainer.ALIGNMENT_CENTER
     m.add_child(v)
-    v.add_child(UIKit.label("DRIVE X", 120, UIKit.ACCENT))
-    v.add_child(UIKit.label("ARCADE RACING", 28, UIKit.CYAN))
+    v.add_child(UIKit.label(Lang.t("menu.title"), 120, UIKit.ACCENT))
+    v.add_child(UIKit.label(Lang.t("menu.subtitle"), 26, UIKit.CYAN))
     var gap := Control.new()
-    gap.custom_minimum_size = Vector2(0, 18)
+    gap.custom_minimum_size = Vector2(0, 14)
     v.add_child(gap)
-    for entry in [["RACE", "tracks"], ["GARAGE", "garage"], ["SETTINGS", "settings"]]:
-        var target: String = entry[1]
-        var b := UIKit.button(entry[0], func() -> void: navigate.emit(target), Vector2(380, 74), 32)
-        b.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-        v.add_child(b)
+    v.add_child(_btn(Lang.t("menu.play"), func() -> void: get_tree().change_scene_to_file("res://scenes/Game.tscn")))
+    v.add_child(_btn(Lang.t("menu.garage"), func() -> void: navigate.emit("garage")))
+    v.add_child(_btn(Lang.t("menu.wardrobe"), func() -> void: navigate.emit("wardrobe")))
+    v.add_child(_btn(Lang.t("menu.settings"), func() -> void: navigate.emit("settings")))
     if OS.get_name() != "Android" and OS.get_name() != "iOS":
-        var q := UIKit.button("QUIT", func() -> void: get_tree().quit(), Vector2(380, 74), 32)
-        q.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-        v.add_child(q)
+        v.add_child(_btn(Lang.t("menu.quit"), func() -> void: get_tree().quit()))
     _coins = UIKit.label("", 32, Color(1.0, 0.85, 0.2), HORIZONTAL_ALIGNMENT_RIGHT)
     _coins.anchor_left = 1.0
     _coins.anchor_right = 1.0
-    _coins.offset_left = -360.0
+    _coins.offset_left = -460.0
     _coins.offset_right = -30.0
     _coins.offset_top = 24.0
     _coins.offset_bottom = 70.0
@@ -43,5 +40,11 @@ func _ready() -> void:
     refresh()
 
 
+func _btn(text: String, cb: Callable) -> Button:
+    var b := UIKit.button(text, cb, Vector2(400, 74), 32)
+    b.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+    return b
+
+
 func refresh() -> void:
-    _coins.text = "COINS  %d" % GameData.coins()
+    _coins.text = Lang.t("common.coins", [GameData.coins()])

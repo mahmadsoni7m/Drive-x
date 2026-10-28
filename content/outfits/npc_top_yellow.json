@@ -1,0 +1,10 @@
+{
+  "id": "npc_top_yellow",
+  "slot": "top",
+  "name": "Футболкаи зард",
+  "price": 0,
+  "color": "e5b92f",
+  "accent": "ffffff",
+  "style": "tshirt",
+  "shop": false
+}

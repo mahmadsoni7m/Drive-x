@@ -1,0 +1,10 @@
+{
+  "id": "npc_top_gray",
+  "slot": "top",
+  "name": "Куртаи хокистарӣ",
+  "price": 0,
+  "color": "6b7280",
+  "accent": "ffffff",
+  "style": "jacket",
+  "shop": false
+}

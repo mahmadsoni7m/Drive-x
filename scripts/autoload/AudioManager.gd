@@ -21,6 +21,8 @@ func _ready() -> void:
     _streams["go"] = _tone([990.0, 1485.0], 0.5, 0.55, 3.0)
     _streams["boost"] = _tone([440.0, 660.0, 880.0], 0.4, 0.5, 5.0, 600.0)
     _streams["finish"] = _tone([523.0, 659.0, 784.0], 0.9, 0.5, 2.5)
+    _streams["punch"] = _noise(0.12, 0.7, 25.0, 0.5)
+    _streams["hit"] = _tone([180.0, 120.0], 0.18, 0.7, 14.0)
     _streams["crash"] = _noise(0.35, 0.9, 9.0, 0.2)
     for i in 8:
         var p := AudioStreamPlayer.new()

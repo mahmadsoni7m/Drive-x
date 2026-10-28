@@ -1,0 +1,10 @@
+{
+  "id": "bottom_pants_black",
+  "slot": "bottom",
+  "name": "Шими сиёҳ",
+  "price": 400,
+  "color": "1a1a1f",
+  "accent": "ffffff",
+  "style": "pants",
+  "shop": true
+}

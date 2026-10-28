@@ -1,0 +1,10 @@
+{
+  "id": "shoes_sneakers_red",
+  "slot": "shoes",
+  "name": "Кроссовкаи сурх",
+  "price": 350,
+  "color": "d62828",
+  "accent": "ffffff",
+  "style": "shoes",
+  "shop": true
+}

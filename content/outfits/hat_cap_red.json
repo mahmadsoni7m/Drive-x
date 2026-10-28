@@ -1,0 +1,10 @@
+{
+  "id": "hat_cap_red",
+  "slot": "hat",
+  "name": "Кепкаи сурх",
+  "price": 200,
+  "color": "d62828",
+  "accent": "ffffff",
+  "style": "cap",
+  "shop": true
+}

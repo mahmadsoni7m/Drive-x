@@ -1,0 +1,16 @@
+{
+  "id": "viper_s",
+  "name": "Афъӣ-С",
+  "price": 16000,
+  "color": "7b2cbf",
+  "top": 66,
+  "accel": 21.5,
+  "handling": 1.15,
+  "nitro": 1.2,
+  "len": 4.5,
+  "wid": 1.95,
+  "hei": 0.44,
+  "cabin": 0.44,
+  "spoiler": true,
+  "stripe": true
+}

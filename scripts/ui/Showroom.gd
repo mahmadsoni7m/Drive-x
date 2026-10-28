@@ -78,10 +78,31 @@ func set_shift(x: float) -> void:
     _cam.h_offset = x
 
 
-func show_car(car: Dictionary) -> void:
+func _clear() -> void:
     if _model != null:
         _model.queue_free()
         _model = null
+
+
+func _frame(close: bool) -> void:
+    if close:
+        _cam.look_at_from_position(Vector3(0.0, 1.3, 3.6), Vector3(0.0, 0.95, 0.0))
+    else:
+        _cam.look_at_from_position(Vector3(0.0, 1.7, 6.6), Vector3(0.0, 0.6, 0.0))
+
+
+func show_car(car: Dictionary) -> void:
+    _clear()
+    _frame(false)
     var built := CarBuilder.build(car)
+    _model = built["root"]
+    _pivot.add_child(_model)
+
+
+## Shows a character; app = HumanBuilder.resolve(...) or resolve_character(...).
+func show_person(app: Dictionary) -> void:
+    _clear()
+    _frame(true)
+    var built := HumanBuilder.build(app)
     _model = built["root"]
     _pivot.add_child(_model)

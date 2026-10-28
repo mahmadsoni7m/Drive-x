@@ -1,0 +1,10 @@
+{
+  "id": "hat_cap_black",
+  "slot": "hat",
+  "name": "Кепкаи сиёҳ",
+  "price": 200,
+  "color": "1b1b22",
+  "accent": "ffffff",
+  "style": "cap",
+  "shop": true
+}

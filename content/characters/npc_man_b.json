@@ -1,0 +1,16 @@
+{
+  "id": "npc_man_b",
+  "name": "Мардуми шаҳр Б",
+  "role": "npc",
+  "skin": "a56a3c",
+  "hair": "15100c",
+  "hair_style": "short",
+  "scale": 1.05,
+  "hp": 40,
+  "outfit": {
+    "top": "top_tshirt_red",
+    "bottom": "bottom_jeans_blue",
+    "shoes": "shoes_boots_brown",
+    "hat": "hat_toqi"
+  }
+}

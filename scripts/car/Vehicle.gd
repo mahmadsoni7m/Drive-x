@@ -33,6 +33,8 @@ var boosting := false
 var drifting := false
 var drift_time := 0.0
 var offroad := false
+var surface_speed := 1.0
+var surface_grip := 1.0
 var forward_speed := 0.0
 var speed_kmh := 0.0
 
@@ -69,6 +71,8 @@ func setup(car_data: Dictionary, stats: Dictionary, player: bool, rname: String)
     grip_mult = float(stats["grip"])
     nitro_mult = float(stats["nitro"])
     motion_mode = CharacterBody3D.MOTION_MODE_FLOATING
+    collision_layer = 4
+    collision_mask = 1 | 4
     var built := CarBuilder.build(car_data)
     _model = built["root"]
     add_child(_model)
@@ -139,6 +143,13 @@ func _build_fx() -> void:
     add_child(_flame)
 
 
+## Apply road-surface effects (WorldData.K_*): grass is slow and slippery, dirt less so.
+func set_surface(kind: int) -> void:
+    surface_speed = float(WorldData.SPEED_MULT[kind])
+    surface_grip = float(WorldData.GRIP_MULT[kind])
+    offroad = kind == WorldData.K_GRASS
+
+
 func place(xform: Transform3D, idx: int) -> void:
     global_transform = xform
     velocity = Vector3.ZERO
@@ -168,7 +179,6 @@ func update_progress(info: TrackInfo, now: float) -> void:
         lap -= 1
     track_idx = new_idx
     lateral_offset = info.lateral_offset(global_position, new_idx)
-    offroad = absf(lateral_offset) > info.width * 0.5 + 0.8
     progress = float(lap * n + track_idx)
     wrong_way = is_player and controllable and forward_speed > 3.0 and velocity.normalized().dot(info.tangent(new_idx)) < -0.3
 
@@ -220,8 +230,7 @@ func _physics_process(delta: float) -> void:
 
     # --- longitudinal
     var max_sp := top_speed * (1.3 if boosting else 1.0)
-    if offroad:
-        max_sp = minf(max_sp, top_speed * 0.5)
+    max_sp *= surface_speed
     var a := 0.0
     if thr > 0.0:
         if vf < -0.5:
@@ -241,8 +250,7 @@ func _physics_process(delta: float) -> void:
     if vf > max_sp:
         a -= (vf - max_sp) * 2.0
     a -= vf * absf(vf) * 0.0007
-    if offroad:
-        a -= signf(vf) * 6.0
+    a -= signf(vf) * (1.0 - surface_speed) * 14.0
     if hb_active:
         a -= 4.0 * signf(vf)
     vf += a * delta
@@ -251,7 +259,7 @@ func _physics_process(delta: float) -> void:
     _long_acc = lerpf(_long_acc, a, clampf(delta * 8.0, 0.0, 1.0))
 
     # --- lateral grip (low while handbraking => slide)
-    var grip_target := GRIP_BASE * grip_mult
+    var grip_target := GRIP_BASE * grip_mult * surface_grip
     if hb_active:
         grip_target = GRIP_DRIFT
     _grip = move_toward(_grip, grip_target, delta * (40.0 if hb_active else 7.0))

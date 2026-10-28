@@ -1,0 +1,10 @@
+{
+  "id": "hat_toqi",
+  "slot": "hat",
+  "name": "Тоқии тоҷикӣ",
+  "price": 600,
+  "color": "15151c",
+  "accent": "f2f2f2",
+  "style": "toqi",
+  "shop": true
+}

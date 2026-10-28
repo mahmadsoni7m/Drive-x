@@ -1,0 +1,10 @@
+{
+  "id": "fighter_pants_camo",
+  "slot": "bottom",
+  "name": "Шими камуфляж",
+  "price": 0,
+  "color": "4a5a35",
+  "accent": "ffffff",
+  "style": "pants",
+  "shop": false
+}

@@ -1,0 +1,10 @@
+{
+  "id": "npc_top_pink",
+  "slot": "top",
+  "name": "Блузаи гулобӣ",
+  "price": 0,
+  "color": "d96aa7",
+  "accent": "ffffff",
+  "style": "long",
+  "shop": false
+}

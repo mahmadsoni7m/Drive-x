@@ -1,0 +1,10 @@
+{
+  "id": "top_jacket_black",
+  "slot": "top",
+  "name": "Куртаи сиёҳ",
+  "price": 900,
+  "color": "1b1b22",
+  "accent": "ffffff",
+  "style": "jacket",
+  "shop": true
+}

@@ -1,0 +1,16 @@
+{
+  "id": "fighter_b",
+  "name": "Ҷанговар Б",
+  "role": "fighter",
+  "skin": "a56a3c",
+  "hair": "0a0806",
+  "hair_style": "none",
+  "scale": 1.12,
+  "hp": 90,
+  "outfit": {
+    "top": "fighter_top_red",
+    "bottom": "bottom_pants_black",
+    "shoes": "fighter_boots_black",
+    "hat": "hat_cap_black"
+  }
+}

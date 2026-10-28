@@ -1,0 +1,10 @@
+{
+  "id": "npc_pants_brown",
+  "slot": "bottom",
+  "name": "Шими қаҳваӣ",
+  "price": 0,
+  "color": "5a4632",
+  "accent": "ffffff",
+  "style": "pants",
+  "shop": false
+}

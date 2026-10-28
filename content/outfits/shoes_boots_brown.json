@@ -1,0 +1,10 @@
+{
+  "id": "shoes_boots_brown",
+  "slot": "shoes",
+  "name": "Ботинкаи қаҳваӣ",
+  "price": 500,
+  "color": "5a3b22",
+  "accent": "ffffff",
+  "style": "shoes",
+  "shop": true
+}

@@ -1,0 +1,10 @@
+{
+  "id": "npc_top_green",
+  "slot": "top",
+  "name": "Куртаи сабз",
+  "price": 0,
+  "color": "3d8b4a",
+  "accent": "ffffff",
+  "style": "long",
+  "shop": false
+}

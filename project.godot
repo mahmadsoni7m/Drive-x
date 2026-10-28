@@ -4,7 +4,7 @@ config_version=5
 [application]
 
 config/name="DRIVE X"
-config/description="3D arcade racing game for Android"
+config/description="Open-world 3D racing and street-fighting game for Android"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 run/max_fps=60

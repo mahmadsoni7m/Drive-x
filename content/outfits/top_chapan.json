@@ -1,0 +1,10 @@
+{
+  "id": "top_chapan",
+  "slot": "top",
+  "name": "Чопони тоҷикӣ",
+  "price": 2500,
+  "color": "1f7a4d",
+  "accent": "e0b84a",
+  "style": "robe",
+  "shop": true
+}

@@ -1,0 +1,16 @@
+{
+  "id": "phantom_x",
+  "name": "Шабаҳ-Х",
+  "price": 35000,
+  "color": "e8ecf4",
+  "top": 76,
+  "accel": 24,
+  "handling": 1.2,
+  "nitro": 1.35,
+  "len": 4.6,
+  "wid": 2.0,
+  "hei": 0.42,
+  "cabin": 0.42,
+  "spoiler": true,
+  "stripe": true
+}

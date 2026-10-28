@@ -1,0 +1,10 @@
+{
+  "id": "top_tshirt_white",
+  "slot": "top",
+  "name": "Футболкаи сафед",
+  "price": 0,
+  "color": "f2f2f2",
+  "accent": "ffffff",
+  "style": "tshirt",
+  "shop": true
+}

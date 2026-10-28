@@ -1,0 +1,16 @@
+{
+  "id": "npc_woman_b",
+  "name": "Занони шаҳр Б",
+  "role": "npc",
+  "skin": "a56a3c",
+  "hair": "201510",
+  "hair_style": "long",
+  "scale": 0.95,
+  "hp": 35,
+  "outfit": {
+    "top": "npc_top_yellow",
+    "bottom": "bottom_jeans_blue",
+    "shoes": "shoes_sneakers_red",
+    "hat": ""
+  }
+}

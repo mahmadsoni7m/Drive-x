@@ -1,17 +1,15 @@
 extends Node
-## Persistent player data: coins, garage, upgrades, settings.
-## Saves are atomic (tmp file -> rename) with a rolling backup, so a crash never corrupts progress.
-## Unknown keys from newer/older saves are preserved; missing keys are filled from defaults.
+## Persistent data: coins, garage, upgrades, wardrobe, settings, race records.
+## Atomic saves (tmp -> rename) + rolling backup. Unknown keys are preserved; missing keys use defaults.
 
 signal coins_changed(total: int)
 
-const SAVE_PATH := "user://drivex_save.json"
-const BACKUP_PATH := "user://drivex_save.bak.json"
-const TMP_PATH := "user://drivex_save.tmp.json"
-const SAVE_VERSION := 1
+const SAVE_PATH := "user://drivex2_save.json"
+const BACKUP_PATH := "user://drivex2_save.bak.json"
+const TMP_PATH := "user://drivex2_save.tmp.json"
+const SAVE_VERSION := 2
 
 var data: Dictionary = {}
-var selected_track: int = 0
 var _dirty := false
 
 
@@ -32,12 +30,11 @@ static func default_data() -> Dictionary:
         "owned": ["gt_rookie"],
         "selected": "gt_rookie",
         "upgrades": {},
+        "owned_outfits": ["top_tshirt_white", "bottom_jeans_blue", "shoes_sneakers_white"],
+        "equipped": {"top": "top_tshirt_white", "bottom": "bottom_jeans_blue", "shoes": "shoes_sneakers_white", "hat": ""},
+        "skin": 1,
         "best_laps": {},
-        "unlocked_tracks": [0],
-        "settings": {
-            "music": 0.5, "sfx": 0.8, "quality": 1, "tilt": false, "tilt_invert": false,
-            "camera": 0, "laps": 3, "ai_count": 5,
-        },
+        "settings": {"music": 0.5, "sfx": 0.8, "quality": 1, "tilt": false, "tilt_invert": false, "camera": 0},
     }
 
 
@@ -81,25 +78,29 @@ func _sanitize() -> void:
             if CarData.has_car(str(o)) and not owned.has(str(o)):
                 owned.append(str(o))
     if owned.is_empty():
-        owned.append("gt_rookie")
+        owned.append(str(Content.cars()[0]["id"]) if not Content.cars().is_empty() else "gt_rookie")
     data["owned"] = owned
     if not owned.has(str(data.get("selected", ""))):
         data["selected"] = owned[0]
-    var tracks: Array = []
-    if data.get("unlocked_tracks") is Array:
-        for t in data["unlocked_tracks"]:
-            tracks.append(int(t))
-    if not tracks.has(0):
-        tracks.append(0)
-    data["unlocked_tracks"] = tracks
+    var oo: Array = []
+    if data.get("owned_outfits") is Array:
+        for o in data["owned_outfits"]:
+            if not Content.outfit(str(o)).is_empty() and not oo.has(str(o)):
+                oo.append(str(o))
+    data["owned_outfits"] = oo
+    var eq: Dictionary = data["equipped"] if data.get("equipped") is Dictionary else {}
+    for slot: String in Content.SLOTS:
+        var id := str(eq.get(slot, ""))
+        if id != "" and not oo.has(id):
+            eq[slot] = ""
+    data["equipped"] = eq
+    data["skin"] = clampi(int(data.get("skin", 1)), 0, HumanBuilder.SKINS.size() - 1)
     if not (data.get("upgrades") is Dictionary):
         data["upgrades"] = {}
     if not (data.get("best_laps") is Dictionary):
         data["best_laps"] = {}
     var s: Dictionary = data["settings"]
     s["quality"] = clampi(int(s.get("quality", 1)), 0, 2)
-    s["laps"] = clampi(int(s.get("laps", 3)), 1, 10)
-    s["ai_count"] = clampi(int(s.get("ai_count", 5)), 1, 7)
     s["camera"] = clampi(int(s.get("camera", 0)), 0, 3)
     s["music"] = clampf(float(s.get("music", 0.5)), 0.0, 1.0)
     s["sfx"] = clampf(float(s.get("sfx", 0.8)), 0.0, 1.0)
@@ -134,7 +135,7 @@ func flush() -> void:
         save_game()
 
 
-# --- coins -------------------------------------------------------------------
+# --- coins --------------------------------------------------------------------
 func coins() -> int:
     return int(data.get("coins", 0))
 
@@ -152,7 +153,7 @@ func spend_coins(amount: int) -> bool:
     return true
 
 
-# --- garage ------------------------------------------------------------------
+# --- garage -------------------------------------------------------------------
 func owns(id: String) -> bool:
     return (data["owned"] as Array).has(id)
 
@@ -170,8 +171,7 @@ func select_car(id: String) -> void:
 func buy_car(id: String) -> bool:
     if not CarData.has_car(id) or owns(id):
         return false
-    var car: Dictionary = CarData.by_id(id)
-    if not spend_coins(int(car["price"])):
+    if not spend_coins(int(CarData.by_id(id)["price"])):
         return false
     (data["owned"] as Array).append(id)
     save_game()
@@ -194,9 +194,7 @@ func buy_upgrade(id: String, key: String) -> bool:
     if not owns(id) or not CarData.UPGRADE_KEYS.has(key):
         return false
     var lvl := upgrade_level(id, key)
-    if lvl >= CarData.MAX_UPGRADE:
-        return false
-    if not spend_coins(CarData.upgrade_cost(lvl)):
+    if lvl >= CarData.MAX_UPGRADE or not spend_coins(CarData.upgrade_cost(lvl)):
         return false
     var all: Dictionary = data["upgrades"]
     if not all.has(id) or not (all[id] is Dictionary):
@@ -206,7 +204,41 @@ func buy_upgrade(id: String, key: String) -> bool:
     return true
 
 
-# --- settings / progress -------------------------------------------------------
+# --- wardrobe -----------------------------------------------------------------
+func owns_outfit(id: String) -> bool:
+    return (data["owned_outfits"] as Array).has(id)
+
+
+func equipped() -> Dictionary:
+    return data["equipped"]
+
+
+func skin() -> int:
+    return int(data["skin"])
+
+
+func set_skin(i: int) -> void:
+    data["skin"] = clampi(i, 0, HumanBuilder.SKINS.size() - 1)
+    save_game()
+
+
+func buy_outfit(id: String) -> bool:
+    var o := Content.outfit(id)
+    if o.is_empty() or owns_outfit(id) or not spend_coins(int(o["price"])):
+        return false
+    (data["owned_outfits"] as Array).append(id)
+    save_game()
+    return true
+
+
+## id = "" removes the item from that slot (only meaningful for hats).
+func equip(slot: String, id: String) -> void:
+    if id == "" or owns_outfit(id):
+        (data["equipped"] as Dictionary)[slot] = id
+        save_game()
+
+
+# --- settings / records ---------------------------------------------------------
 func setting(key: String) -> Variant:
     var s: Dictionary = data["settings"]
     if s.has(key):
@@ -219,24 +251,14 @@ func set_setting(key: String, value: Variant) -> void:
     _dirty = true
 
 
-func is_unlocked(track: int) -> bool:
-    return (data["unlocked_tracks"] as Array).has(track)
+func best_lap(race_id: String) -> float:
+    return float((data["best_laps"] as Dictionary).get(race_id, 0.0))
 
 
-func unlock_track(track: int) -> void:
-    if not is_unlocked(track):
-        (data["unlocked_tracks"] as Array).append(track)
-        _dirty = true
-
-
-func best_lap(track: int) -> float:
-    return float((data["best_laps"] as Dictionary).get(str(track), 0.0))
-
-
-func record_lap(track: int, t: float) -> bool:
-    var old := best_lap(track)
+func record_lap(race_id: String, t: float) -> bool:
+    var old := best_lap(race_id)
     if old <= 0.0 or t < old:
-        (data["best_laps"] as Dictionary)[str(track)] = t
+        (data["best_laps"] as Dictionary)[race_id] = t
         _dirty = true
         return true
     return false

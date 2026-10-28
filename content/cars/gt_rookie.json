@@ -1,0 +1,16 @@
+{
+  "id": "gt_rookie",
+  "name": "ГТ Навкор",
+  "price": 0,
+  "color": "e63946",
+  "top": 46,
+  "accel": 15,
+  "handling": 1.0,
+  "nitro": 1.0,
+  "len": 4.3,
+  "wid": 1.8,
+  "hei": 0.5,
+  "cabin": 0.5,
+  "spoiler": false,
+  "stripe": false
+}

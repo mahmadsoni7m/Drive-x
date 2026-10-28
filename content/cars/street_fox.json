@@ -1,0 +1,16 @@
+{
+  "id": "street_fox",
+  "name": "Рӯбоҳи кӯча",
+  "price": 2500,
+  "color": "ff9f1c",
+  "top": 52,
+  "accel": 17,
+  "handling": 1.05,
+  "nitro": 1.05,
+  "len": 4.1,
+  "wid": 1.8,
+  "hei": 0.52,
+  "cabin": 0.52,
+  "spoiler": true,
+  "stripe": true
+}

@@ -1,0 +1,16 @@
+{
+  "id": "npc_man_d",
+  "name": "Мардуми шаҳр Г",
+  "role": "npc",
+  "skin": "6b4226",
+  "hair": "0a0806",
+  "hair_style": "none",
+  "scale": 1.02,
+  "hp": 40,
+  "outfit": {
+    "top": "top_hoodie_blue",
+    "bottom": "bottom_shorts_khaki",
+    "shoes": "shoes_sneakers_white",
+    "hat": ""
+  }
+}

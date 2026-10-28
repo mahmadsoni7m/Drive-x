@@ -1,0 +1,10 @@
+{
+  "id": "shoes_sneakers_white",
+  "slot": "shoes",
+  "name": "Кроссовкаи сафед",
+  "price": 0,
+  "color": "f4f4f4",
+  "accent": "ffffff",
+  "style": "shoes",
+  "shop": true
+}

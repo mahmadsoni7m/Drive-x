@@ -1,0 +1,16 @@
+{
+  "id": "apex_r",
+  "name": "Апекс-Р",
+  "price": 7000,
+  "color": "2ec4b6",
+  "top": 58,
+  "accel": 19,
+  "handling": 1.12,
+  "nitro": 1.1,
+  "len": 4.4,
+  "wid": 1.9,
+  "hei": 0.46,
+  "cabin": 0.46,
+  "spoiler": true,
+  "stripe": false
+}

@@ -1,0 +1,10 @@
+{
+  "id": "fighter_top_red",
+  "slot": "top",
+  "name": "Майкаи сурх",
+  "price": 0,
+  "color": "a31515",
+  "accent": "ffffff",
+  "style": "tshirt",
+  "shop": false
+}

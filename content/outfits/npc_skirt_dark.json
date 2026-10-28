@@ -1,0 +1,10 @@
+{
+  "id": "npc_skirt_dark",
+  "slot": "bottom",
+  "name": "Домани торик",
+  "price": 0,
+  "color": "3a2a4a",
+  "accent": "ffffff",
+  "style": "skirt",
+  "shop": false
+}

@@ -1,0 +1,10 @@
+{
+  "id": "top_tshirt_red",
+  "slot": "top",
+  "name": "Футболкаи сурх",
+  "price": 300,
+  "color": "d62828",
+  "accent": "ffffff",
+  "style": "tshirt",
+  "shop": true
+}
