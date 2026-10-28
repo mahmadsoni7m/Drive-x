@@ -1,4 +1,4 @@
-class_name CameraRig
+class_name OpenWorldCameraRig
 extends Node3D
 ## One camera for both modes. Driving: chase / far / hood / top. On foot: orbit around the person.
 
