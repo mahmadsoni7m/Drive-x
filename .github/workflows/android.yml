@@ -151,8 +151,9 @@ jobs:
           echo "APK size: $SIZE bytes"
           if [ "$SIZE" -lt 5000000 ]; then echo "::error::APK suspiciously small"; exit 1; fi
           unzip -tq "$APK_PATH"
-          unzip -l "$APK_PATH" | grep -q "AndroidManifest.xml"
-          unzip -l "$APK_PATH" | grep -q "classes.dex"
+          unzip -l "$APK_PATH" > logs/apk_listing.txt
+          grep -q "AndroidManifest.xml" logs/apk_listing.txt
+          grep -q "classes.dex" logs/apk_listing.txt
           godot --headless --path . --export-pack "$EXPORT_PRESET" build/content-check.pck 2>&1 | tee logs/export_pack.log || true
           for f in content/index.json content/cars/gt_rookie.json content/locale/tg.json content/races/ring_highway.json; do
             if ! grep -aq "$f" build/content-check.pck; then echo "::error::$f is missing from the exported package"; exit 1; fi
@@ -172,7 +173,7 @@ jobs:
       - name: Show Godot logs
         if: always()
         run: |
-          NOISE='Parameter "m" is null|mesh_get_surface_count|leaked at exit|ObjectDB|cleanup \(core|PagedAllocator|paged_allocator'
+          NOISE='Parameter "m" is null|mesh_get_surface_count|is_inside_tree|get_global_transform|body_test_motion|body->get_space|leaked at exit|ObjectDB|cleanup \(core|PagedAllocator|paged_allocator'
           {
             echo "## Godot logs"
             for f in logs/import.log logs/self_test.log logs/smoke_menu.log logs/smoke_world.log logs/export.log; do
