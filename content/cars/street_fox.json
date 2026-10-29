@@ -1,6 +1,5 @@
 {
   "id": "street_fox",
-  "style": "hatch",
   "name": "Рӯбоҳи кӯча",
   "price": 2500,
   "color": "ff9f1c",
@@ -12,6 +11,11 @@
   "wid": 1.8,
   "hei": 0.52,
   "cabin": 0.52,
+  "style": "hatch",
+  "grille": "mesh",
+  "headlight": "round",
+  "taillight": "split",
+  "wheel": 0.34,
   "spoiler": true,
   "stripe": true
 }

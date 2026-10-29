@@ -595,6 +595,9 @@ func _cull(delta: float) -> void:
         return
     _cull_t = 0.5
     var focus := player.global_position if mode == Mode.FOOT else cur_car.global_position
+    for v in vehicles:
+        if is_instance_valid(v) and v != cur_car and race.is_empty():
+            v.visible = v.global_position.distance_squared_to(focus) < 40000.0
     var i := people.size() - 1
     while i >= 0:
         var p := people[i] as Person

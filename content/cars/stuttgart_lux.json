@@ -1,0 +1,21 @@
+{
+  "id": "stuttgart_lux",
+  "name": "Штутгарт Люкс",
+  "price": 28000,
+  "color": "0d0d10",
+  "top": 62,
+  "accel": 20,
+  "handling": 1.0,
+  "nitro": 1.2,
+  "len": 5.1,
+  "wid": 1.9,
+  "hei": 0.62,
+  "cabin": 0.6,
+  "style": "sedan_lux",
+  "grille": "mesh",
+  "headlight": "led_strip",
+  "taillight": "bar",
+  "wheel": 0.35,
+  "spoiler": false,
+  "stripe": false
+}

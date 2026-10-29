@@ -1,6 +1,5 @@
 {
   "id": "apex_r",
-  "style": "sedan",
   "name": "Апекс-Р",
   "price": 7000,
   "color": "2ec4b6",
@@ -12,6 +11,11 @@
   "wid": 1.9,
   "hei": 0.46,
   "cabin": 0.46,
+  "style": "sedan_sport",
+  "grille": "single",
+  "headlight": "led_strip",
+  "taillight": "bar",
+  "wheel": 0.35,
   "spoiler": true,
   "stripe": false
 }

@@ -1,0 +1,21 @@
+{
+  "id": "tokyo_coupe",
+  "name": "Токио Купе",
+  "price": 12000,
+  "color": "e8e8ec",
+  "top": 60,
+  "accel": 20,
+  "handling": 1.15,
+  "nitro": 1.1,
+  "len": 4.5,
+  "wid": 1.8,
+  "hei": 0.55,
+  "cabin": 0.5,
+  "style": "coupe",
+  "grille": "wide",
+  "headlight": "slim",
+  "taillight": "bar",
+  "wheel": 0.34,
+  "spoiler": true,
+  "stripe": false
+}

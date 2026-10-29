@@ -1,0 +1,21 @@
+{
+  "id": "bavaria_sport",
+  "name": "Бавария Спорт",
+  "price": 20000,
+  "color": "1c69d4",
+  "top": 64,
+  "accel": 22,
+  "handling": 1.2,
+  "nitro": 1.15,
+  "len": 4.75,
+  "wid": 1.85,
+  "hei": 0.6,
+  "cabin": 0.55,
+  "style": "sedan_sport",
+  "grille": "kidney",
+  "headlight": "led_strip",
+  "taillight": "bar",
+  "wheel": 0.35,
+  "spoiler": false,
+  "stripe": false
+}

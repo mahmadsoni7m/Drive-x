@@ -24,6 +24,9 @@ static func build(net: RoadNet, quality: int) -> Node3D:
     gm.uv1_world_triplanar = true
     gm.uv1_scale = Vector3(0.05, 0.05, 0.05)
     gm.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+    gm.normal_enabled = true
+    gm.normal_texture = _normal_tex(128, 0.06, 6.0, 5)
+    gm.normal_scale = 0.9
     ground.material_override = gm
     ground.position.y = -0.03
     ground.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -34,7 +37,59 @@ static func build(net: RoadNet, quality: int) -> Node3D:
     _walls(root)
     _scenery(root, net, quality)
     _mountains(root)
+    if quality >= 1:
+        _clouds(root)
     return root
+
+
+static func _normal_tex(size: int, freq: float, strength: float, seed_v: int) -> ImageTexture:
+    var noise := FastNoiseLite.new()
+    noise.seed = seed_v
+    noise.frequency = freq
+    var img := noise.get_image(size, size, false, false, true)
+    img.bump_map_to_normal_map(strength)
+    img.generate_mipmaps()
+    return ImageTexture.create_from_image(img)
+
+
+static func _cloud_texture() -> ImageTexture:
+    var noise := FastNoiseLite.new()
+    noise.seed = 77
+    noise.frequency = 0.018
+    noise.fractal_octaves = 4
+    var src := noise.get_image(128, 128, false, false, true)
+    var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+    for y in 128:
+        for x in 128:
+            var v := src.get_pixel(x, y).r
+            var edge := minf(minf(float(x), 127.0 - float(x)), minf(float(y), 127.0 - float(y))) / 28.0
+            var a := clampf((v - 0.52) * 3.0, 0.0, 1.0) * clampf(edge, 0.0, 1.0)
+            img.set_pixel(x, y, Color(1.0, 1.0, 1.0, a * 0.9))
+    return ImageTexture.create_from_image(img)
+
+
+static func _clouds(root: Node3D) -> void:
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    mat.albedo_texture = _cloud_texture()
+    mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+    mat.disable_fog = true
+    var rng := RandomNumberGenerator.new()
+    rng.seed = 123
+    for i in 22:
+        var q := QuadMesh.new()
+        q.size = Vector2(rng.randf_range(500.0, 900.0), rng.randf_range(300.0, 600.0))
+        q.orientation = PlaneMesh.FACE_Y
+        var mi := MeshInstance3D.new()
+        mi.mesh = q
+        mi.material_override = mat
+        var a := rng.randf() * TAU
+        var d := rng.randf_range(100.0, 1700.0)
+        mi.position = Vector3(cos(a) * d, rng.randf_range(420.0, 560.0), sin(a) * d)
+        mi.rotation.y = rng.randf() * TAU
+        mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+        root.add_child(mi)
 
 
 static func _grass_tex() -> ImageTexture:
@@ -197,10 +252,15 @@ static func _roads(root: Node3D, net: RoadNet) -> void:
             v += seg
     for k in tools:
         var mi := MeshInstance3D.new()
+        (tools[k] as SurfaceTool).generate_tangents()
         mi.mesh = (tools[k] as SurfaceTool).commit()
         var m := _mat(Color.WHITE, 0.9)
         m.albedo_texture = _road_tex(int(k))
         m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+        m.normal_enabled = true
+        m.normal_texture = _normal_tex(64, 0.09 if int(k) != WorldData.K_DIRT else 0.05, 5.0 if int(k) != WorldData.K_DIRT else 9.0, 40 + int(k))
+        m.normal_scale = 0.8
+        m.roughness = 0.75 if int(k) != WorldData.K_DIRT else 1.0
         mi.material_override = m
         mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
         mi.name = "Roads_%d" % int(k)
@@ -259,6 +319,10 @@ static func _buildings(root: Node3D) -> void:
     m.uv1_world_triplanar = true
     m.uv1_scale = Vector3(0.0625, 0.0625, 0.0625)
     m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+    m.normal_enabled = true
+    m.normal_texture = _normal_tex(64, 0.12, 3.0, 8)
+    m.normal_scale = 0.5
+    m.uv1_scale = Vector3(0.0625, 0.0625, 0.0625)
     mmi.material_override = m
     mmi.name = "Buildings"
     root.add_child(mmi)
@@ -391,6 +455,14 @@ static func make_environment(quality: int) -> Node3D:
     env.fog_enabled = true
     env.fog_light_color = Color(0.8, 0.88, 0.95)
     env.fog_density = 0.0005
+    env.adjustment_enabled = true
+    env.adjustment_saturation = 1.12
+    env.adjustment_contrast = 1.06
+    if quality >= 2:
+        env.glow_enabled = true
+        env.glow_intensity = 0.5
+        env.glow_bloom = 0.08
+        env.glow_hdr_threshold = 1.1
     var we := WorldEnvironment.new()
     we.environment = env
     root.add_child(we)
@@ -403,7 +475,9 @@ static func make_environment(quality: int) -> Node3D:
         sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
     else:
         sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-    sun.directional_shadow_max_distance = 90.0
+    sun.directional_shadow_max_distance = 110.0
+    sun.shadow_normal_bias = 1.2
+    sun.shadow_blur = 1.2
     root.add_child(sun)
     return root
 

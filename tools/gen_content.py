@@ -7,12 +7,30 @@ def w(path, obj):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(obj, f, ensure_ascii=False, indent=2)
 
+def car(id, name, price, color, top, accel, hand, nitro, L, W, H, CH, style, grille, head, tail, wheel=0.36, spoiler=False, stripe=False):
+    return dict(id=id, name=name, price=price, color=color, top=top, accel=accel, handling=hand, nitro=nitro,
+                len=L, wid=W, hei=H, cabin=CH, style=style, grille=grille, headlight=head, taillight=tail,
+                wheel=wheel, spoiler=spoiler, stripe=stripe)
+
+# NOTE: designs are INSPIRED by well-known car classes but use neutral names (real brand names and
+# logos are trademarks; rename freely in the JSON "name" field if you hold the rights).
 cars = [
- dict(id="gt_rookie", style="coupe", name="ГТ Навкор", price=0, color="e63946", top=46, accel=15, handling=1.0, nitro=1.0, len=4.3, wid=1.8, hei=0.5, cabin=0.5, spoiler=False, stripe=False),
- dict(id="street_fox", style="hatch", name="Рӯбоҳи кӯча", price=2500, color="ff9f1c", top=52, accel=17, handling=1.05, nitro=1.05, len=4.1, wid=1.8, hei=0.52, cabin=0.52, spoiler=True, stripe=True),
- dict(id="apex_r", style="sedan", name="Апекс-Р", price=7000, color="2ec4b6", top=58, accel=19, handling=1.12, nitro=1.1, len=4.4, wid=1.9, hei=0.46, cabin=0.46, spoiler=True, stripe=False),
- dict(id="viper_s", style="super", name="Афъӣ-С", price=16000, color="7b2cbf", top=66, accel=21.5, handling=1.15, nitro=1.2, len=4.5, wid=1.95, hei=0.44, cabin=0.44, spoiler=True, stripe=True),
- dict(id="phantom_x", style="super", name="Шабаҳ-Х", price=35000, color="e8ecf4", top=76, accel=24, handling=1.2, nitro=1.35, len=4.6, wid=2.0, hei=0.42, cabin=0.42, spoiler=True, stripe=True),
+ car("gt_rookie","ГТ Навкор",0,"e63946",46,15,1.0,1.0,4.3,1.8,0.5,0.5,"coupe","wide","slim","split"),
+ car("city_sedan","Седани шаҳрӣ",1200,"c9ced6",40,11,0.95,0.9,4.5,1.7,0.62,0.55,"sedan","mesh","round","split",0.31),
+ car("street_fox","Рӯбоҳи кӯча",2500,"ff9f1c",52,17,1.05,1.05,4.1,1.8,0.52,0.52,"hatch","mesh","round","split",0.34,True,True),
+ car("niva_offroad","Нива-и кӯҳӣ",3500,"6b7f3a",42,12,0.9,0.95,4.0,1.8,0.78,0.62,"suv","slats","round","split",0.38),
+ car("apex_r","Апекс-Р",7000,"2ec4b6",58,19,1.12,1.1,4.4,1.9,0.46,0.46,"sedan_sport","single","led_strip","bar",0.35,True),
+ car("tokyo_coupe","Токио Купе",12000,"e8e8ec",60,20,1.15,1.1,4.5,1.8,0.55,0.5,"coupe","wide","slim","bar",0.34,True),
+ car("detroit_muscle","Детройт Мускул",15000,"1f4fa3",62,23,0.98,1.1,4.8,1.9,0.6,0.5,"muscle","slats","round","split",0.36,False,True),
+ car("viper_s","Афъӣ-С",16000,"7b2cbf",66,21.5,1.15,1.2,4.5,1.95,0.44,0.44,"super","vent","slim","split",0.34,True,True),
+ car("bavaria_sport","Бавария Спорт",20000,"1c69d4",64,22,1.2,1.15,4.75,1.85,0.6,0.55,"sedan_sport","kidney","led_strip","bar",0.35),
+ car("ingolstadt_rs","Ингольштадт РС",22000,"9aa0a8",66,22,1.18,1.15,4.7,1.9,0.58,0.55,"fastback","single","led_strip","bar",0.35,True),
+ car("bavaria_suv","Бавария Х",24000,"2b2d33",58,18,1.0,1.1,4.95,2.0,0.8,0.62,"suv","kidney","led_strip","bar",0.4),
+ car("stuttgart_lux","Штутгарт Люкс",28000,"0d0d10",62,20,1.0,1.2,5.1,1.9,0.62,0.6,"sedan_lux","mesh","led_strip","bar",0.35),
+ car("phantom_x","Шабаҳ-Х",35000,"e8ecf4",76,24,1.2,1.35,4.6,2.0,0.42,0.42,"super","vent","slim","bar",0.34,True,True),
+ car("zuffenhausen","Цуффенхаузен",40000,"e5b422",74,26,1.28,1.25,4.5,1.9,0.5,0.5,"fastback","vent","round","bar",0.35),
+ car("stuttgart_gt","Штутгарт ГТ",45000,"c9ccd2",76,25,1.2,1.3,4.7,1.95,0.52,0.46,"gt","slats_v","slim","bar",0.35),
+ car("santagata","Сант-Агата",90000,"76b82a",88,30,1.3,1.5,4.75,2.05,0.42,0.42,"wedge","vent","slim","split",0.36,True),
 ]
 for c in cars: w(f"content/cars/{c['id']}.json", c)
 

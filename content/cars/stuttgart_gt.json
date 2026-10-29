@@ -1,0 +1,21 @@
+{
+  "id": "stuttgart_gt",
+  "name": "Штутгарт ГТ",
+  "price": 45000,
+  "color": "c9ccd2",
+  "top": 76,
+  "accel": 25,
+  "handling": 1.2,
+  "nitro": 1.3,
+  "len": 4.7,
+  "wid": 1.95,
+  "hei": 0.52,
+  "cabin": 0.46,
+  "style": "gt",
+  "grille": "slats_v",
+  "headlight": "slim",
+  "taillight": "bar",
+  "wheel": 0.35,
+  "spoiler": false,
+  "stripe": false
+}

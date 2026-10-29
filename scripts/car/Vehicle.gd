@@ -48,6 +48,8 @@ var best_lap := INF
 var wrong_way := false
 
 var _model: Node3D
+var _tail_mat: StandardMaterial3D
+var _wheel_r := 0.36
 var _wheels: Array = []
 var _grip := GRIP_BASE
 var _wheel_spin := 0.0
@@ -75,6 +77,8 @@ func setup(car_data: Dictionary, stats: Dictionary, player: bool, rname: String)
     collision_mask = 1 | 4
     var built := CarBuilder.build(car_data)
     _model = built["root"]
+    _tail_mat = built.get("tail_mat") as StandardMaterial3D
+    _wheel_r = float(car_data.get("wheel", CarBuilder.WHEEL_R))
     add_child(_model)
     _wheels = built["wheels"]
     var shape := CollisionShape3D.new()
@@ -285,7 +289,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _update_visuals(delta: float, vf: float, vl: float) -> void:
-    _wheel_spin += vf / CarBuilder.WHEEL_R * delta
+    _wheel_spin += vf / _wheel_r * delta
     for i in _wheels.size():
         var w: Node3D = _wheels[i]
         var steer_angle := -steer_cur * 0.45 if i < 2 else 0.0
@@ -297,6 +301,8 @@ func _update_visuals(delta: float, vf: float, vl: float) -> void:
     _pitch = lerpf(_pitch, pitch_t, k)
     if _model != null:
         _model.rotation = Vector3(_pitch, 0.0, _roll)
+    if _tail_mat != null:
+        _tail_mat.emission_energy_multiplier = 6.0 if (input_brake > 0.1 and controllable) else 1.6
     var smoke := drifting and absf(vl) > 2.0
     _smoke_l.emitting = smoke
     _smoke_r.emitting = smoke

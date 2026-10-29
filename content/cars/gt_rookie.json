@@ -1,6 +1,5 @@
 {
   "id": "gt_rookie",
-  "style": "coupe",
   "name": "ГТ Навкор",
   "price": 0,
   "color": "e63946",
@@ -12,6 +11,11 @@
   "wid": 1.8,
   "hei": 0.5,
   "cabin": 0.5,
+  "style": "coupe",
+  "grille": "wide",
+  "headlight": "slim",
+  "taillight": "split",
+  "wheel": 0.36,
   "spoiler": false,
   "stripe": false
 }

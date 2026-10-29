@@ -4,10 +4,21 @@
   ],
   "cars": [
     "gt_rookie",
+    "city_sedan",
     "street_fox",
+    "niva_offroad",
     "apex_r",
+    "tokyo_coupe",
+    "detroit_muscle",
     "viper_s",
-    "phantom_x"
+    "bavaria_sport",
+    "ingolstadt_rs",
+    "bavaria_suv",
+    "stuttgart_lux",
+    "phantom_x",
+    "zuffenhausen",
+    "stuttgart_gt",
+    "santagata"
   ],
   "outfits": [
     "top_tshirt_white",

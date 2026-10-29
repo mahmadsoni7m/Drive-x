@@ -7,7 +7,11 @@
 3. CI худаш `Content.validate()`-ро иҷро мекунад ва хатогиҳоро нишон медиҳад.
 
 ## Мошини нав (`content/cars/<id>.json`)
-`id, name, price, color(hex), top (м/с), accel, handling, nitro, len, wid, hei, cabin, spoiler, stripe`.
+`id, name, price, color(hex), top (м/с), accel, handling, nitro, len, wid, hei, cabin, spoiler, stripe` ва тарҳ:
+`style` (sedan | sedan_sport | sedan_lux | coupe | hatch | suv | muscle | fastback | gt | super | wedge),
+`grille` (kidney | mesh | single | slats | slats_v | vent | wide), `headlight` (round | led_strip | slim),
+`taillight` (bar | split | round), `wheel` (радиуси чарх, м). Тарҳҳо ба услуби синфҳои машҳур сохта шудаанд, вале бо номҳои бетараф
+(номи бренд ва логотип тамғаи тиҷоратӣ ҳастанд; `name`-ро дар JSON озодона иваз кунед).
 Модели Blender (ихтиёрӣ): `assets/models/<id>.glb` бо гиреҳҳои `Wheel_FL/FR/RL/RR` (`tools/blender/generate_cars.py`).
 
 ## Либоси нав (`content/outfits/<id>.json`)

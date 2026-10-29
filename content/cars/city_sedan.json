@@ -1,0 +1,21 @@
+{
+  "id": "city_sedan",
+  "name": "Седани шаҳрӣ",
+  "price": 1200,
+  "color": "c9ced6",
+  "top": 40,
+  "accel": 11,
+  "handling": 0.95,
+  "nitro": 0.9,
+  "len": 4.5,
+  "wid": 1.7,
+  "hei": 0.62,
+  "cabin": 0.55,
+  "style": "sedan",
+  "grille": "mesh",
+  "headlight": "round",
+  "taillight": "split",
+  "wheel": 0.31,
+  "spoiler": false,
+  "stripe": false
+}

@@ -1,6 +1,5 @@
 {
   "id": "viper_s",
-  "style": "super",
   "name": "Афъӣ-С",
   "price": 16000,
   "color": "7b2cbf",
@@ -12,6 +11,11 @@
   "wid": 1.95,
   "hei": 0.44,
   "cabin": 0.44,
+  "style": "super",
+  "grille": "vent",
+  "headlight": "slim",
+  "taillight": "split",
+  "wheel": 0.34,
   "spoiler": true,
   "stripe": true
 }

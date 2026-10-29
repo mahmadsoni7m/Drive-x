@@ -1,0 +1,21 @@
+{
+  "id": "niva_offroad",
+  "name": "Нива-и кӯҳӣ",
+  "price": 3500,
+  "color": "6b7f3a",
+  "top": 42,
+  "accel": 12,
+  "handling": 0.9,
+  "nitro": 0.95,
+  "len": 4.0,
+  "wid": 1.8,
+  "hei": 0.78,
+  "cabin": 0.62,
+  "style": "suv",
+  "grille": "slats",
+  "headlight": "round",
+  "taillight": "split",
+  "wheel": 0.38,
+  "spoiler": false,
+  "stripe": false
+}

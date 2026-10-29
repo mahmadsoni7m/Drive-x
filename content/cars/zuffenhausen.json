@@ -1,0 +1,21 @@
+{
+  "id": "zuffenhausen",
+  "name": "Цуффенхаузен",
+  "price": 40000,
+  "color": "e5b422",
+  "top": 74,
+  "accel": 26,
+  "handling": 1.28,
+  "nitro": 1.25,
+  "len": 4.5,
+  "wid": 1.9,
+  "hei": 0.5,
+  "cabin": 0.5,
+  "style": "fastback",
+  "grille": "vent",
+  "headlight": "round",
+  "taillight": "bar",
+  "wheel": 0.35,
+  "spoiler": false,
+  "stripe": false
+}

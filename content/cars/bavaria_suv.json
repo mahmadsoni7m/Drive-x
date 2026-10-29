@@ -1,0 +1,21 @@
+{
+  "id": "bavaria_suv",
+  "name": "Бавария Х",
+  "price": 24000,
+  "color": "2b2d33",
+  "top": 58,
+  "accel": 18,
+  "handling": 1.0,
+  "nitro": 1.1,
+  "len": 4.95,
+  "wid": 2.0,
+  "hei": 0.8,
+  "cabin": 0.62,
+  "style": "suv",
+  "grille": "kidney",
+  "headlight": "led_strip",
+  "taillight": "bar",
+  "wheel": 0.4,
+  "spoiler": false,
+  "stripe": false
+}

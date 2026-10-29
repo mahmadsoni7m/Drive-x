@@ -1,0 +1,21 @@
+{
+  "id": "ingolstadt_rs",
+  "name": "Ингольштадт РС",
+  "price": 22000,
+  "color": "9aa0a8",
+  "top": 66,
+  "accel": 22,
+  "handling": 1.18,
+  "nitro": 1.15,
+  "len": 4.7,
+  "wid": 1.9,
+  "hei": 0.58,
+  "cabin": 0.55,
+  "style": "fastback",
+  "grille": "single",
+  "headlight": "led_strip",
+  "taillight": "bar",
+  "wheel": 0.35,
+  "spoiler": true,
+  "stripe": false
+}
