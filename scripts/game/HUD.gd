@@ -8,6 +8,7 @@ signal reset_pressed
 signal enter_pressed
 signal exit_pressed
 signal punch_pressed
+signal weapon_pressed
 signal kick_pressed
 signal look_moved(delta_px: Vector2)
 signal results_closed
@@ -34,6 +35,9 @@ var _b_punch: TouchButton
 var _b_kick: TouchButton
 var _b_block: TouchButton
 var _b_enter: TouchButton
+var _b_fire: TouchButton
+var _b_weapon: TouchButton
+var _lbl_ammo: Label
 var _b_exit: TouchButton
 var _b_left: TouchButton
 var _b_right: TouchButton
@@ -144,6 +148,13 @@ func _build() -> void:
     _b_enter = TouchButton.new(Lang.t("btn.enter"), UIKit.GOOD)
     _place(_foot, _b_enter, Vector2(1, 1), Vector2(-250, -440), Vector2(210, 100))
     _b_enter.visible = false
+    _b_weapon = TouchButton.new(Lang.t("btn.weapon"), Color(0.85, 0.8, 0.4))
+    _place(_foot, _b_weapon, Vector2(1, 1), Vector2(-250, -560), Vector2(210, 100))
+    _b_fire = TouchButton.new(Lang.t("btn.fire"), Color(1.0, 0.35, 0.2))
+    _place(_foot, _b_fire, Vector2(1, 1), Vector2(-450, -500), Vector2(180, 150))
+    _b_fire.visible = false
+    _lbl_ammo = _lbl("", 24, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+    _place(_foot, _lbl_ammo, Vector2(1, 1), Vector2(-450, -535), Vector2(180, 32))
 
     # --- driving
     _b_left = TouchButton.new("", Color(0.6, 0.8, 1.0), "left")
@@ -220,6 +231,19 @@ func _notification(what: int) -> void:
 # --- polled input --------------------------------------------------------------------------
 func stick() -> Vector2:
     return _stick.value
+
+
+func fire_held() -> bool:
+    return _b_fire.pressed and _b_fire.visible
+
+
+func set_armed(a: bool) -> void:
+    _b_fire.visible = a
+    _lbl_ammo.visible = a
+
+
+func update_ammo(ammo: int, mag: int, reloading: bool) -> void:
+    _lbl_ammo.text = Lang.t("hud.reloading") if reloading else Lang.t("hud.ammo", [ammo, mag])
 
 
 func block_held() -> bool:
@@ -320,6 +344,7 @@ func _process(delta: float) -> void:
     _edge("exit", _b_exit, exit_pressed)
     _edge("punch", _b_punch, punch_pressed)
     _edge("kick", _b_kick, kick_pressed)
+    _edge("weapon", _b_weapon, weapon_pressed)
 
 
 func show_results(d: Dictionary) -> void:

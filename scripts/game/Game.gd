@@ -64,6 +64,8 @@ func _ready() -> void:
     hud.exit_pressed.connect(_toggle_car)
     hud.punch_pressed.connect(func() -> void: _attack("punch"))
     hud.kick_pressed.connect(func() -> void: _attack("kick"))
+    hud.weapon_pressed.connect(_toggle_weapon)
+    hud.set_armed(false)
     hud.look_moved.connect(func(d: Vector2) -> void: cam.look(d))
     hud.results_closed.connect(_end_race)
     hud.quit_pressed.connect(_on_quit)
@@ -112,6 +114,9 @@ func _spawn_player() -> void:
     player = _make_person(app, Person.Role.PLAYER, 100.0, WorldData.PLAYER_START)
     player.yaw = PI * 0.5
     player.died.connect(_on_player_died)
+    var weapons := Content.weapons()
+    if not weapons.is_empty():
+        player.set_weapon(weapons[0])
 
 
 func _spawn_parked() -> void:
@@ -131,7 +136,7 @@ func _spawn_parked() -> void:
                 skip = true
         if skip:
             continue
-        var side := 6.8 if rng.randf() < 0.5 else -6.8
+        var side := 3.6 if rng.randf() < 0.5 else -3.6
         var pos := Vector3(street + side, 0.0, along) if vertical else Vector3(along, 0.0, street + side)
         if pos.distance_to(WorldData.PLAYER_CAR) < 25.0:
             continue
@@ -215,6 +220,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
             _attack("punch")
         KEY_K:
             _attack("kick")
+        KEY_G:
+            _toggle_weapon()
         KEY_C:
             _on_camera()
         KEY_R:
@@ -231,6 +238,12 @@ func _read_input() -> void:
         var v := Vector2(s.x + _key(KEY_D, KEY_RIGHT) - _key(KEY_A, KEY_LEFT), s.y + _key(KEY_W, KEY_UP) - _key(KEY_S, KEY_DOWN)).limit_length(1.0)
         player.move_dir = Basis(Vector3.UP, cam.yaw) * Vector3(v.x, 0.0, -v.y)
         player.blocking = hud.block_held() or Input.is_key_pressed(KEY_Q)
+        if player.armed and (hud.fire_held() or Input.is_key_pressed(KEY_F)):
+            player.aim_yaw = cam.yaw
+            if absf(angle_difference(player.yaw, cam.yaw)) < 0.3:
+                player.fire()
+        else:
+            player.aim_yaw = INF
         return
     var c := cur_car
     var steer := hud.steer_axis() + _key(KEY_D, KEY_RIGHT) - _key(KEY_A, KEY_LEFT)
@@ -245,6 +258,14 @@ func _read_input() -> void:
     c.input_brake = 1.0 if hud.brake() or _key(KEY_S, KEY_DOWN) > 0.0 else 0.0
     c.input_nitro = hud.nitro_held() or Input.is_key_pressed(KEY_SHIFT)
     c.input_drift = hud.drift_held() or Input.is_key_pressed(KEY_SPACE)
+
+
+func _toggle_weapon() -> void:
+    if mode != Mode.FOOT or player.ko or player.weapon.is_empty():
+        return
+    player.set_armed(not player.armed)
+    hud.set_armed(player.armed)
+    hud.flash(Lang.t("msg.weapon_on") if player.armed else Lang.t("msg.weapon_off"), 1.5)
 
 
 func _attack(kind: String) -> void:
@@ -280,6 +301,8 @@ func _toggle_car() -> void:
 
 func _enter_car(v: Vehicle) -> void:
     mode = Mode.CAR
+    player.set_armed(false)
+    hud.set_armed(false)
     cur_car = v
     v.set_physics_process(true)
     v.controllable = true
@@ -561,6 +584,8 @@ func _update_hud(delta: float) -> void:
     else:
         path = (race["info"] as TrackInfo).points
         hud.update_race(str(race["state"]) != "countdown", int(race["rank"]), _race_racers().size(), cur_car.lap, int(race["laps"]), float(race["time"]))
+    if mode == Mode.FOOT and player.armed:
+        hud.update_ammo(player.ammo, int(player.weapon["mag"]), player.reloading)
     hud.update_map(focus, _map_markers, path, delta)
 
 

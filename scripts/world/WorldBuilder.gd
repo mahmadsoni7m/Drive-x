@@ -18,16 +18,110 @@ static func build(net: RoadNet, quality: int) -> Node3D:
     var pm := PlaneMesh.new()
     pm.size = Vector2(7000.0, 7000.0)
     ground.mesh = pm
-    ground.material_override = _mat(Color(0.34, 0.47, 0.26), 1.0)
+    var gm := _mat(Color.WHITE, 1.0)
+    gm.albedo_texture = _grass_tex()
+    gm.uv1_triplanar = true
+    gm.uv1_world_triplanar = true
+    gm.uv1_scale = Vector3(0.05, 0.05, 0.05)
+    gm.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+    ground.material_override = gm
     ground.position.y = -0.03
     ground.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
     root.add_child(ground)
     _roads(root, net)
+    _sidewalks_and_lamps(root)
     _buildings(root)
     _walls(root)
     _scenery(root, net, quality)
     _mountains(root)
     return root
+
+
+static func _grass_tex() -> ImageTexture:
+    var img := Image.create(64, 64, true, Image.FORMAT_RGB8)
+    var rng := RandomNumberGenerator.new()
+    rng.seed = 21
+    for y in 64:
+        for x in 64:
+            var n := rng.randf()
+            img.set_pixel(x, y, Color(0.22 + n * 0.08, 0.36 + n * 0.1, 0.16 + n * 0.05))
+    img.generate_mipmaps()
+    return ImageTexture.create_from_image(img)
+
+
+static func _window_tex() -> ImageTexture:
+    var img := Image.create(64, 64, true, Image.FORMAT_RGB8)
+    var rng := RandomNumberGenerator.new()
+    rng.seed = 31
+    for gy in 4:
+        for gx in 4:
+            var lit := rng.randf() < 0.25
+            for y in 16:
+                for x in 16:
+                    var c := Color(0.92, 0.92, 0.92)
+                    if x >= 4 and x < 12 and y >= 4 and y < 11:
+                        c = Color(0.95, 0.85, 0.5) if lit else Color(0.22, 0.3, 0.4)
+                    img.set_pixel(gx * 16 + x, gy * 16 + y, c)
+    img.generate_mipmaps()
+    return ImageTexture.create_from_image(img)
+
+
+static func _sidewalks_and_lamps(root: Node3D) -> void:
+    var st := SurfaceTool.new()
+    st.begin(Mesh.PRIMITIVE_TRIANGLES)
+    var pole_list: Array[Transform3D] = []
+    var head_list: Array[Transform3D] = []
+    var streets: Array = WorldData.STREETS
+    for s: float in streets:
+        for axis in 2:
+            for i in streets.size() - 1:
+                var z0: float = float(streets[i]) + 5.0
+                var z1: float = float(streets[i + 1]) - 5.0
+                for side: float in [-1.0, 1.0]:
+                    var a0 := s + side * 5.0
+                    var a1 := s + side * 9.5
+                    var p00: Vector3
+                    var p01: Vector3
+                    var p10: Vector3
+                    var p11: Vector3
+                    if axis == 0:
+                        p00 = Vector3(a0, 0.1, z0)
+                        p01 = Vector3(a0, 0.1, z1)
+                        p10 = Vector3(a1, 0.1, z0)
+                        p11 = Vector3(a1, 0.1, z1)
+                    else:
+                        p00 = Vector3(z0, 0.1, a0)
+                        p01 = Vector3(z1, 0.1, a0)
+                        p10 = Vector3(z0, 0.1, a1)
+                        p11 = Vector3(z1, 0.1, a1)
+                    for v: Vector3 in [p00, p01, p11, p00, p11, p10]:
+                        st.set_normal(Vector3.UP)
+                        st.add_vertex(v)
+                var step := 45.0
+                var t := z0 + 10.0
+                var flip := 1.0
+                while t < z1 - 6.0:
+                    var lx := s + flip * 8.8
+                    var pos := Vector3(lx, 0.0, t) if axis == 0 else Vector3(t, 0.0, lx)
+                    pole_list.append(Transform3D(Basis.IDENTITY, pos + Vector3(0.0, 3.0, 0.0)))
+                    head_list.append(Transform3D(Basis.IDENTITY, pos + Vector3(-flip * 0.5 if axis == 0 else 0.0, 6.1, 0.0 if axis == 0 else -flip * 0.5)))
+                    t += step
+                    flip = -flip
+    var mi := MeshInstance3D.new()
+    mi.mesh = st.commit()
+    mi.material_override = _mat(Color(0.62, 0.62, 0.64), 0.95)
+    mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    mi.name = "Sidewalks"
+    root.add_child(mi)
+    var pole := BoxMesh.new()
+    pole.size = Vector3(0.2, 6.0, 0.2)
+    var head := BoxMesh.new()
+    head.size = Vector3(0.9, 0.2, 0.5)
+    var glow := StandardMaterial3D.new()
+    glow.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    glow.albedo_color = Color(1.0, 0.92, 0.6)
+    _multi(root, pole, _mat(Color(0.25, 0.27, 0.3)), pole_list)
+    _multi(root, head, glow, head_list)
 
 
 # --- roads -----------------------------------------------------------------------------
@@ -47,8 +141,8 @@ static func _road_tex(kind: int) -> ImageTexture:
                 if absf(u - 0.3) < 0.05 or absf(u - 0.7) < 0.05:
                     c = c.darkened(0.15)
             else:
-                var g := 0.15 + rng.randf() * 0.05
-                c = Color(g, g, g * 1.05)
+                var g := 0.24 + rng.randf() * 0.05
+                c = Color(g, g, g * 1.04)
                 if kind == WorldData.K_HIGHWAY:
                     if u < 0.04 or u > 0.96:
                         c = Color(0.92, 0.92, 0.92)
@@ -160,6 +254,11 @@ static func _buildings(root: Node3D) -> void:
     var m := StandardMaterial3D.new()
     m.vertex_color_use_as_albedo = true
     m.roughness = 0.8
+    m.albedo_texture = _window_tex()
+    m.uv1_triplanar = true
+    m.uv1_world_triplanar = true
+    m.uv1_scale = Vector3(0.0625, 0.0625, 0.0625)
+    m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
     mmi.material_override = m
     mmi.name = "Buildings"
     root.add_child(mmi)
@@ -286,7 +385,8 @@ static func make_environment(quality: int) -> Node3D:
     sky.sky_material = psm
     env.sky = sky
     env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-    env.ambient_light_energy = 1.0
+    env.ambient_light_energy = 0.55
+    env.tonemap_exposure = 0.9
     env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
     env.fog_enabled = true
     env.fog_light_color = Color(0.8, 0.88, 0.95)
@@ -296,7 +396,7 @@ static func make_environment(quality: int) -> Node3D:
     root.add_child(we)
     var sun := DirectionalLight3D.new()
     sun.rotation_degrees = Vector3(-50.0, -40.0, 0.0)
-    sun.light_energy = 1.25
+    sun.light_energy = 0.95
     sun.light_color = Color(1.0, 0.96, 0.88)
     sun.shadow_enabled = quality >= 1
     if quality >= 2:

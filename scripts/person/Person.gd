@@ -25,7 +25,18 @@ var blocking := false
 var ko := false
 var yaw := 0.0
 
+var armed := false
+var weapon: Dictionary = {}
+var ammo := 0
+var reloading := false
+var aim_yaw := INF                  # when set (and armed) the person turns to this yaw while shooting
+
 var _body: Node3D
+var _gun: Node3D
+var _muzzle: MeshInstance3D
+var _fire_cd := 0.0
+var _reload_t := 0.0
+var _recoil := 0.0
 var _phase := 0.0
 var _atk_t := 0.0
 var _atk_dur := 0.4
@@ -55,6 +66,7 @@ func setup(appearance: Dictionary, r: int, hp: float) -> void:
     _body = built["root"]
     parts = built["parts"]
     add_child(_body)
+    _build_gun()
     var cs := CollisionShape3D.new()
     var cap := CapsuleShape3D.new()
     cap.radius = 0.3
@@ -62,6 +74,140 @@ func setup(appearance: Dictionary, r: int, hp: float) -> void:
     cs.shape = cap
     cs.position.y = 0.85
     add_child(cs)
+
+
+func _build_gun() -> void:
+    _gun = Node3D.new()
+    _gun.position = Vector3(0.2, 1.24, -0.15)
+    _gun.visible = false
+    var metal := StandardMaterial3D.new()
+    metal.albedo_color = Color(0.12, 0.12, 0.14)
+    metal.metallic = 0.6
+    metal.roughness = 0.45
+    var wood := StandardMaterial3D.new()
+    wood.albedo_color = Color(0.42, 0.26, 0.14)
+    for spec in [
+        [Vector3(0.05, 0.05, 0.55), Vector3(0.0, 0.03, -0.55), metal],
+        [Vector3(0.07, 0.11, 0.42), Vector3(0.0, 0.0, -0.18), metal],
+        [Vector3(0.05, 0.2, 0.08), Vector3(0.0, -0.13, -0.26), metal],
+        [Vector3(0.06, 0.1, 0.26), Vector3(0.0, -0.01, 0.16), wood],
+        [Vector3(0.06, 0.1, 0.2), Vector3(0.0, 0.01, -0.36), wood],
+    ]:
+        var mi := MeshInstance3D.new()
+        var bm := BoxMesh.new()
+        bm.size = spec[0]
+        mi.mesh = bm
+        mi.position = spec[1]
+        mi.material_override = spec[2]
+        _gun.add_child(mi)
+    _muzzle = MeshInstance3D.new()
+    var fm := BoxMesh.new()
+    fm.size = Vector3(0.14, 0.14, 0.14)
+    _muzzle.mesh = fm
+    var flash := StandardMaterial3D.new()
+    flash.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    flash.albedo_color = Color(1.0, 0.85, 0.3)
+    _muzzle.material_override = flash
+    _muzzle.position = Vector3(0.0, 0.03, -0.9)
+    _muzzle.visible = false
+    _gun.add_child(_muzzle)
+    _body.add_child(_gun)
+
+
+func set_weapon(w: Dictionary) -> void:
+    weapon = w
+    ammo = int(w.get("mag", 30)) if not w.is_empty() else 0
+    reloading = false
+
+
+func set_armed(v: bool) -> void:
+    armed = v and not weapon.is_empty()
+    _gun.visible = armed
+    if not armed:
+        aim_yaw = INF
+
+
+func _blocked(from: Vector3, to: Vector3) -> bool:
+    var w := get_world_3d()
+    if w == null or not is_inside_tree():
+        return false
+    var space := w.direct_space_state
+    if space == null:
+        return false
+    var q := PhysicsRayQueryParameters3D.create(from, to, 1)
+    return not space.intersect_ray(q).is_empty()
+
+
+func _start_reload() -> void:
+    if reloading or weapon.is_empty():
+        return
+    reloading = true
+    _reload_t = float(weapon["reload"])
+    _sfx("click", 0.8)
+
+
+func fire() -> bool:
+    if not armed or ko or weapon.is_empty() or reloading or _fire_cd > 0.0:
+        return false
+    if ammo <= 0:
+        _start_reload()
+        return false
+    ammo -= 1
+    _fire_cd = 1.0 / float(weapon["rate"])
+    _recoil = 1.0
+    _sfx("shot", randf_range(0.92, 1.08))
+    var muzzle := _gun.to_global(Vector3(0.0, 0.03, -0.9))
+    var fwd := _forward()
+    var rng := float(weapon["range"])
+    var best: Person = null
+    var best_d := rng
+    for o in people:
+        var p := o as Person
+        if p == null or not is_instance_valid(p) or p == self or p.ko or not p.visible or not _can_hit(p):
+            continue
+        var tp := p.global_position + Vector3(0.0, 1.1, 0.0)
+        var to := tp - muzzle
+        var dist := to.length()
+        if dist > rng or dist < 0.5:
+            continue
+        var flat := Vector3(to.x, 0.0, to.z).normalized()
+        if fwd.dot(flat) < 0.965 or dist >= best_d:
+            continue
+        if _blocked(muzzle, tp):
+            continue
+        best = p
+        best_d = dist
+    var end := muzzle + fwd * rng
+    if best != null:
+        end = best.global_position + Vector3(0.0, 1.1, 0.0)
+        best.take_hit(float(weapon["damage"]), fwd, self)
+    _tracer(muzzle, end)
+    if ammo <= 0:
+        _start_reload()
+    return true
+
+
+func _tracer(a: Vector3, b: Vector3) -> void:
+    var parent := get_parent()
+    if parent == null or not is_inside_tree():
+        return
+    var dir := b - a
+    if dir.length() < 0.2:
+        return
+    var mi := MeshInstance3D.new()
+    var bm := BoxMesh.new()
+    bm.size = Vector3(0.04, 0.04, dir.length())
+    mi.mesh = bm
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.albedo_color = Color(1.0, 0.9, 0.45)
+    mi.material_override = mat
+    mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    parent.add_child(mi)
+    mi.global_position = (a + b) * 0.5
+    var up := Vector3.UP if absf(dir.normalized().y) < 0.99 else Vector3.RIGHT
+    mi.look_at(b, up)
+    get_tree().create_timer(0.05).timeout.connect(mi.queue_free)
 
 
 func revive(pos: Vector3) -> void:
@@ -76,7 +222,7 @@ func revive(pos: Vector3) -> void:
 
 # --- combat ------------------------------------------------------------------------
 func attack(kind: String) -> bool:
-    if ko or _atk_t > 0.0 or _cool > 0.0:
+    if ko or armed or _atk_t > 0.0 or _cool > 0.0:
         return false
     _atk_kind = kind
     _atk_dur = 0.36 if kind == "punch" else 0.5
@@ -196,6 +342,15 @@ func _physics_process(delta: float) -> void:
         _update_ko(delta)
         return
     _cool = maxf(0.0, _cool - delta)
+    _fire_cd = maxf(0.0, _fire_cd - delta)
+    _recoil = maxf(0.0, _recoil - delta * 8.0)
+    if _muzzle != null:
+        _muzzle.visible = _recoil > 0.65
+    if reloading:
+        _reload_t -= delta
+        if _reload_t <= 0.0:
+            reloading = false
+            ammo = int(weapon["mag"])
     var desired := Vector3.ZERO
     match role:
         Role.PLAYER:
@@ -214,9 +369,12 @@ func _physics_process(delta: float) -> void:
         if not _atk_hit and _atk_t <= _atk_dur * 0.55:
             _atk_hit = true
             _apply_hit()
+    var aiming := armed and aim_yaw != INF
+    if aiming:
+        yaw = lerp_angle(yaw, aim_yaw, clampf(delta * 14.0, 0.0, 1.0))
     if mag > 0.05:
         var want := desired.normalized() * speed
-        if _atk_t <= 0.0 and not (role == Role.FIGHTER and target != null and (target.global_position - global_position).length() < 3.0):
+        if not aiming and _atk_t <= 0.0 and not (role == Role.FIGHTER and target != null and (target.global_position - global_position).length() < 3.0):
             yaw = lerp_angle(yaw, atan2(-desired.x, -desired.z), clampf(delta * 12.0, 0.0, 1.0))
         velocity = velocity.lerp(want + _kb, clampf(delta * 10.0, 0.0, 1.0))
     else:
@@ -249,6 +407,10 @@ func _animate(delta: float) -> void:
             ar.rotation.x = PI * 0.5 * k
         else:
             lr.rotation.x = PI * 0.55 * k
+    elif armed:
+        ar.rotation.x = 1.5 - _recoil * 0.12
+        al.rotation.x = 1.3
+        _gun.rotation.x = _recoil * 0.05
     elif blocking:
         al.rotation.x = 1.9
         ar.rotation.x = 1.9

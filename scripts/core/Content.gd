@@ -54,6 +54,14 @@ static func races() -> Array:
     return _list("races")
 
 
+static func weapons() -> Array:
+    return _list("weapons")
+
+
+static func weapon(id: String) -> Dictionary:
+    return _find(weapons(), id)
+
+
 static func _find(list: Array, id: String) -> Dictionary:
     for d in list:
         if d["id"] == id:
@@ -120,6 +128,12 @@ static func validate() -> Array:
                 p.append("character %s uses unknown outfit %s" % [c["id"], oid])
     if characters_with_role("npc").is_empty() or characters_with_role("fighter").is_empty():
         p.append("need at least one npc and one fighter character")
+    if weapons().is_empty():
+        p.append("no weapons")
+    for wp in weapons():
+        for k in ["name", "damage", "rate", "mag", "reload", "range"]:
+            if not wp.has(k):
+                p.append("weapon %s missing '%s'" % [wp["id"], k])
     for r in races():
         if (r.get("waypoints", []) as Array).size() < 6:
             p.append("race %s needs >= 6 waypoints" % r["id"])

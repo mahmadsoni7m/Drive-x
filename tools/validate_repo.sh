@@ -12,7 +12,7 @@ grep -q 'config/features=PackedStringArray("4.3"' project.godot || { echo "proje
 grep -q 'name="Android Debug"' export_presets.cfg || { echo "preset 'Android Debug' missing"; fail=1; }
 grep -q 'include_filter="content/\*"' export_presets.cfg || { echo "export preset must include content/* (JSON data)"; fail=1; }
 # every id listed in content/index.json must have its JSON file
-for kind in cars outfits characters races; do
+for kind in cars outfits characters races weapons; do
   ids=$(tr -d '\n ' < content/index.json | sed -n "s/.*\"$kind\":\[\([^]]*\)\].*/\1/p" | tr -d '"' | tr ',' ' ')
   for id in $ids; do need "content/$kind/$id.json"; done
 done

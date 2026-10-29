@@ -1,0 +1,9 @@
+{
+  "id": "ak",
+  "name": "Автомат АК",
+  "damage": 12,
+  "rate": 9,
+  "mag": 30,
+  "reload": 1.6,
+  "range": 80
+}

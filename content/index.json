@@ -1,4 +1,7 @@
 {
+  "weapons": [
+    "ak"
+  ],
   "cars": [
     "gt_rookie",
     "street_fox",

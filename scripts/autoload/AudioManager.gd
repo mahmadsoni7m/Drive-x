@@ -21,6 +21,8 @@ func _ready() -> void:
     _streams["go"] = _tone([990.0, 1485.0], 0.5, 0.55, 3.0)
     _streams["boost"] = _tone([440.0, 660.0, 880.0], 0.4, 0.5, 5.0, 600.0)
     _streams["finish"] = _tone([523.0, 659.0, 784.0], 0.9, 0.5, 2.5)
+    _streams["shot"] = _noise(0.1, 0.9, 28.0, 0.75)
+    _streams["click"] = _tone([1400.0], 0.05, 0.4, 60.0)
     _streams["punch"] = _noise(0.12, 0.7, 25.0, 0.5)
     _streams["hit"] = _tone([180.0, 120.0], 0.18, 0.7, 14.0)
     _streams["crash"] = _noise(0.35, 0.9, 9.0, 0.2)

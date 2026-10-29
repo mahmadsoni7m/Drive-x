@@ -8,11 +8,11 @@ def w(path, obj):
         json.dump(obj, f, ensure_ascii=False, indent=2)
 
 cars = [
- dict(id="gt_rookie", name="ГТ Навкор", price=0, color="e63946", top=46, accel=15, handling=1.0, nitro=1.0, len=4.3, wid=1.8, hei=0.5, cabin=0.5, spoiler=False, stripe=False),
- dict(id="street_fox", name="Рӯбоҳи кӯча", price=2500, color="ff9f1c", top=52, accel=17, handling=1.05, nitro=1.05, len=4.1, wid=1.8, hei=0.52, cabin=0.52, spoiler=True, stripe=True),
- dict(id="apex_r", name="Апекс-Р", price=7000, color="2ec4b6", top=58, accel=19, handling=1.12, nitro=1.1, len=4.4, wid=1.9, hei=0.46, cabin=0.46, spoiler=True, stripe=False),
- dict(id="viper_s", name="Афъӣ-С", price=16000, color="7b2cbf", top=66, accel=21.5, handling=1.15, nitro=1.2, len=4.5, wid=1.95, hei=0.44, cabin=0.44, spoiler=True, stripe=True),
- dict(id="phantom_x", name="Шабаҳ-Х", price=35000, color="e8ecf4", top=76, accel=24, handling=1.2, nitro=1.35, len=4.6, wid=2.0, hei=0.42, cabin=0.42, spoiler=True, stripe=True),
+ dict(id="gt_rookie", style="coupe", name="ГТ Навкор", price=0, color="e63946", top=46, accel=15, handling=1.0, nitro=1.0, len=4.3, wid=1.8, hei=0.5, cabin=0.5, spoiler=False, stripe=False),
+ dict(id="street_fox", style="hatch", name="Рӯбоҳи кӯча", price=2500, color="ff9f1c", top=52, accel=17, handling=1.05, nitro=1.05, len=4.1, wid=1.8, hei=0.52, cabin=0.52, spoiler=True, stripe=True),
+ dict(id="apex_r", style="sedan", name="Апекс-Р", price=7000, color="2ec4b6", top=58, accel=19, handling=1.12, nitro=1.1, len=4.4, wid=1.9, hei=0.46, cabin=0.46, spoiler=True, stripe=False),
+ dict(id="viper_s", style="super", name="Афъӣ-С", price=16000, color="7b2cbf", top=66, accel=21.5, handling=1.15, nitro=1.2, len=4.5, wid=1.95, hei=0.44, cabin=0.44, spoiler=True, stripe=True),
+ dict(id="phantom_x", style="super", name="Шабаҳ-Х", price=35000, color="e8ecf4", top=76, accel=24, handling=1.2, nitro=1.35, len=4.6, wid=2.0, hei=0.42, cabin=0.42, spoiler=True, stripe=True),
 ]
 for c in cars: w(f"content/cars/{c['id']}.json", c)
 
@@ -82,7 +82,9 @@ races = [
 ]
 for r in races: w(f"content/races/{r['id']}.json", r)
 
-w("content/index.json", dict(
+weapons = [dict(id="ak", name="Автомат АК", damage=12, rate=9, mag=30, reload=1.6, range=80)]
+for x in weapons: w(f"content/weapons/{x['id']}.json", x)
+w("content/index.json", dict(weapons=[x["id"] for x in weapons],
     cars=[c["id"] for c in cars], outfits=[x["id"] for x in outfits],
     characters=[x["id"] for x in chars], races=[r["id"] for r in races]))
 print("cars", len(cars), "outfits", len(outfits), "characters", len(chars), "races", len(races))

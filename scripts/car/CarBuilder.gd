@@ -94,46 +94,114 @@ static func _wheel(parent: Node3D, pos: Vector3, tire: Material, rim: Material) 
     return w
 
 
+const STYLES: Dictionary = {
+    "sedan": {"nose": 0.5, "hood_z": -0.37, "hood_y": 0.84, "wb": -0.14, "rf": 0.02, "rr": 0.24, "rb": 0.36, "tail": 0.95},
+    "coupe": {"nose": 0.5, "hood_z": -0.38, "hood_y": 0.82, "wb": -0.10, "rf": 0.06, "rr": 0.20, "rb": 0.33, "tail": 0.90},
+    "hatch": {"nose": 0.55, "hood_z": -0.36, "hood_y": 0.88, "wb": -0.18, "rf": -0.04, "rr": 0.30, "rb": 0.40, "tail": 1.00},
+    "super": {"nose": 0.40, "hood_z": -0.40, "hood_y": 0.70, "wb": -0.06, "rf": 0.08, "rr": 0.18, "rb": 0.30, "tail": 0.82},
+}
+
+
+static func _paint_mat(c: Color, metal: float, rough: float) -> StandardMaterial3D:
+    var m := _mat(c, metal, rough)
+    m.cull_mode = BaseMaterial3D.CULL_DISABLED
+    return m
+
+
+## Extrudes a side-view polygon (x = z-along-car, y = height) across the car width.
+static func _extrude(parent: Node3D, poly: PackedVector2Array, width: float, mat: Material) -> void:
+    var st := SurfaceTool.new()
+    st.begin(Mesh.PRIMITIVE_TRIANGLES)
+    var hw := width * 0.5
+    var n := poly.size()
+    var c := Vector2.ZERO
+    for pt in poly:
+        c += pt
+    c /= float(n)
+    for i in n:
+        var a := poly[i]
+        var b := poly[(i + 1) % n]
+        var d := b - a
+        var perp := Vector2(d.y, -d.x).normalized()
+        if perp.dot((a + b) * 0.5 - c) < 0.0:
+            perp = -perp
+        var nrm := Vector3(0.0, perp.y, perp.x)
+        var al := Vector3(-hw, a.y, a.x)
+        var ar := Vector3(hw, a.y, a.x)
+        var bl := Vector3(-hw, b.y, b.x)
+        var br := Vector3(hw, b.y, b.x)
+        for v: Vector3 in [al, bl, br, al, br, ar]:
+            st.set_normal(nrm)
+            st.add_vertex(v)
+    var idx := Geometry2D.triangulate_polygon(poly)
+    for k in range(0, idx.size(), 3):
+        for sx: float in [-1.0, 1.0]:
+            for j in 3:
+                var pt := poly[idx[k + j]]
+                st.set_normal(Vector3(sx, 0.0, 0.0))
+                st.add_vertex(Vector3(sx * hw, pt.y, pt.x))
+    var mi := MeshInstance3D.new()
+    mi.mesh = st.commit()
+    mi.material_override = mat
+    parent.add_child(mi)
+
+
 static func _procedural(car: Dictionary) -> Dictionary:
     var L: float = car["len"]
     var W: float = car["wid"]
     var H: float = car["hei"]
     var CH: float = car["cabin"]
+    var st: Dictionary = STYLES.get(str(car.get("style", "sedan")), STYLES["sedan"])
     var col := Color.html(str(car["color"]))
+    var striped: bool = car.get("stripe", false)
+    var spoiler: bool = car.get("spoiler", false)
     var root := Node3D.new()
-    var paint := _mat(col, 0.6, 0.25)
+    var paint := _paint_mat(col, 0.55, 0.3)
     var dark := _mat(Color(0.04, 0.04, 0.05), 0.3, 0.5)
-    var glass := _mat(Color(0.05, 0.09, 0.14), 0.9, 0.08)
-    var y0 := 0.28
-    # body, cabin glass and roof
-    _box(root, Vector3(W, H, L), Vector3(0.0, y0 + H * 0.5, 0.0), paint)
-    var cl := L * 0.42
-    _box(root, Vector3(W * 0.84, CH, cl), Vector3(0.0, y0 + H + CH * 0.5 - 0.02, L * 0.07), glass)
-    _box(root, Vector3(W * 0.8, 0.05, cl * 0.82), Vector3(0.0, y0 + H + CH, L * 0.08), paint)
-    # splitter / diffuser
-    _box(root, Vector3(W * 1.02, 0.08, 0.35), Vector3(0.0, y0 + 0.02, -L * 0.5 + 0.1), dark)
-    _box(root, Vector3(W, 0.1, 0.3), Vector3(0.0, y0 + 0.04, L * 0.5 - 0.1), dark)
+    var glass := _paint_mat(Color(0.1, 0.16, 0.24), 0.85, 0.08)
+    var roof_mat := _paint_mat(Color(0.96, 0.96, 0.96) if striped else col, 0.55, 0.3)
+    var y0 := 0.26
+    var roof_y := y0 + H + CH
+    var nose: float = st["nose"]
+    var hood_z: float = st["hood_z"]
+    var hood_y: float = st["hood_y"]
+    var wb: float = st["wb"]
+    var rf: float = st["rf"]
+    var rr: float = st["rr"]
+    var rb: float = st["rb"]
+    var tail: float = st["tail"]
+    # lower body (bonnet, doors, boot)
+    _extrude(root, PackedVector2Array([
+        Vector2(-0.5 * L, y0), Vector2(-0.5 * L, y0 + nose * H), Vector2(hood_z * L, y0 + hood_y * H),
+        Vector2(wb * L, y0 + H), Vector2(rb * L, y0 + H), Vector2(0.5 * L, y0 + tail * H), Vector2(0.5 * L, y0)]), W, paint)
+    # greenhouse (windows) and roof panel
+    _extrude(root, PackedVector2Array([
+        Vector2(wb * L, y0 + H - 0.02), Vector2(rf * L, roof_y), Vector2(rr * L, roof_y), Vector2(rb * L, y0 + H - 0.02)]), W * 0.86, glass)
+    _extrude(root, PackedVector2Array([
+        Vector2(rf * L - 0.02, roof_y - 0.02), Vector2(rr * L + 0.02, roof_y - 0.02),
+        Vector2(rr * L + 0.02, roof_y + 0.035), Vector2(rf * L - 0.02, roof_y + 0.035)]), W * 0.84, roof_mat)
+    # bumpers, grille, side skirts
+    _box(root, Vector3(W * 1.02, 0.12, 0.3), Vector3(0.0, y0 + 0.07, -L * 0.5 + 0.08), dark)
+    _box(root, Vector3(W * 1.0, 0.14, 0.26), Vector3(0.0, y0 + 0.09, L * 0.5 - 0.06), dark)
+    _box(root, Vector3(W * 0.5, 0.1, 0.05), Vector3(0.0, y0 + nose * H * 0.7, -L * 0.5 - 0.02), dark)
+    for sx: float in [-1.0, 1.0]:
+        _box(root, Vector3(0.06, 0.1, L * 0.45), Vector3(sx * (W * 0.5 + 0.01), y0 + 0.08, 0.0), dark)
+        _box(root, Vector3(0.1, 0.1, 0.14), Vector3(sx * (W * 0.5 + 0.06), y0 + H + 0.06, wb * L + 0.1), paint)
     # lights
     var hl := _glow(Color(1.0, 0.97, 0.8), 2.5)
     var tl := _glow(Color(1.0, 0.05, 0.05), 2.0)
     for sx: float in [-1.0, 1.0]:
-        _box(root, Vector3(0.38, 0.1, 0.06), Vector3(sx * W * 0.32, y0 + H * 0.65, -L * 0.5 - 0.01), hl)
-        _box(root, Vector3(0.42, 0.1, 0.06), Vector3(sx * W * 0.32, y0 + H * 0.7, L * 0.5 + 0.01), tl)
-    # racing stripe
-    var stripe: bool = car.get("stripe", false)
-    if stripe:
-        _box(root, Vector3(0.3, 0.012, L * 0.99), Vector3(0.0, y0 + H + 0.007, 0.0), _mat(Color(0.95, 0.95, 0.95), 0.0, 0.4))
-    # spoiler
-    var spoiler: bool = car.get("spoiler", false)
+        _box(root, Vector3(0.36, 0.1, 0.06), Vector3(sx * W * 0.32, y0 + nose * H * 0.95, -L * 0.5 - 0.03), hl)
+        _box(root, Vector3(0.4, 0.09, 0.06), Vector3(sx * W * 0.32, y0 + tail * H * 0.8, L * 0.5 + 0.02), tl)
     if spoiler:
         for sx: float in [-1.0, 1.0]:
-            _box(root, Vector3(0.06, 0.28, 0.12), Vector3(sx * W * 0.3, y0 + H + 0.12, L * 0.5 - 0.22), dark)
-        _box(root, Vector3(W * 0.98, 0.05, 0.42), Vector3(0.0, y0 + H + 0.28, L * 0.5 - 0.22), paint)
+            _box(root, Vector3(0.06, 0.26, 0.12), Vector3(sx * W * 0.3, y0 + tail * H + 0.1, L * 0.5 - 0.24), dark)
+        _box(root, Vector3(W * 0.98, 0.05, 0.4), Vector3(0.0, y0 + tail * H + 0.24, L * 0.5 - 0.24), paint)
     # wheels (FL, FR, RL, RR)
     var wx := W * 0.5 - WHEEL_W * 0.5 + 0.03
     var wz := L * 0.31
     var tire := _mat(Color(0.03, 0.03, 0.03), 0.0, 0.9)
-    var rim := _mat(Color(0.75, 0.78, 0.85), 0.9, 0.25)
+    var rim := _mat(Color(0.8, 0.82, 0.88), 0.9, 0.25)
     var wheels: Array = []
     for p: Vector3 in [Vector3(-wx, WHEEL_R, -wz), Vector3(wx, WHEEL_R, -wz), Vector3(-wx, WHEEL_R, wz), Vector3(wx, WHEEL_R, wz)]:
         wheels.append(_wheel(root, p, tire, rim))
