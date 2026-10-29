@@ -135,7 +135,8 @@ func _blocked(from: Vector3, to: Vector3) -> bool:
     if space == null:
         return false
     var q := PhysicsRayQueryParameters3D.create(from, to, 1)
-    return not space.intersect_ray(q).is_empty()
+    var hit := space.intersect_ray(q)
+    return not hit.is_empty() and hit.get("collider") is StaticBody3D
 
 
 func _start_reload() -> void:
@@ -144,6 +145,30 @@ func _start_reload() -> void:
     reloading = true
     _reload_t = float(weapon["reload"])
     _sfx("click", 0.8)
+
+
+## Nearest valid target inside the firing cone (about +-15 degrees). check_walls = also test line of sight.
+func _find_target(muzzle: Vector3, fwd: Vector3, check_walls: bool) -> Person:
+    var rng := float(weapon["range"])
+    var best: Person = null
+    var best_d := rng
+    for o in people:
+        var p := o as Person
+        if p == null or not is_instance_valid(p) or p == self or p.ko or not p.visible or not _can_hit(p):
+            continue
+        var tp := p.global_position + Vector3(0.0, 1.1, 0.0)
+        var to := tp - muzzle
+        var dist := to.length()
+        if dist > rng or dist < 0.5 or dist >= best_d:
+            continue
+        var flat := Vector3(to.x, 0.0, to.z).normalized()
+        if fwd.dot(flat) < 0.965:
+            continue
+        if check_walls and _blocked(muzzle, tp):
+            continue
+        best = p
+        best_d = dist
+    return best
 
 
 func fire() -> bool:
@@ -159,24 +184,7 @@ func fire() -> bool:
     var muzzle := _gun.to_global(Vector3(0.0, 0.03, -0.9))
     var fwd := _forward()
     var rng := float(weapon["range"])
-    var best: Person = null
-    var best_d := rng
-    for o in people:
-        var p := o as Person
-        if p == null or not is_instance_valid(p) or p == self or p.ko or not p.visible or not _can_hit(p):
-            continue
-        var tp := p.global_position + Vector3(0.0, 1.1, 0.0)
-        var to := tp - muzzle
-        var dist := to.length()
-        if dist > rng or dist < 0.5:
-            continue
-        var flat := Vector3(to.x, 0.0, to.z).normalized()
-        if fwd.dot(flat) < 0.965 or dist >= best_d:
-            continue
-        if _blocked(muzzle, tp):
-            continue
-        best = p
-        best_d = dist
+    var best := _find_target(muzzle, fwd, true)
     var end := muzzle + fwd * rng
     if best != null:
         end = best.global_position + Vector3(0.0, 1.1, 0.0)
@@ -233,6 +241,8 @@ func attack(kind: String) -> bool:
 
 
 func _sfx(sound: String, pitch: float) -> void:
+    if not is_inside_tree():
+        return
     var am := get_node_or_null("/root/AudioManager")
     if am != null:
         am.play(sound, pitch)

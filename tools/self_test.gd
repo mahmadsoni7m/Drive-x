@@ -31,7 +31,19 @@ func _collect(dir_path: String, ext: String, out: Array) -> void:
     d.list_dir_end()
 
 
-func _initialize() -> void:
+var _started := false
+
+
+## Tests run on the FIRST frame: during _initialize() nodes are not yet "inside the tree",
+## so global transforms / physics would be meaningless.
+func _process(_delta: float) -> bool:
+    if not _started:
+        _started = true
+        _run_tests()
+    return false
+
+
+func _run_tests() -> void:
     print("== DRIVE X self-test ==")
     _test_scripts()
     _test_content()
@@ -200,6 +212,9 @@ func _test_combat() -> void:
     hero.set_weapon(Content.weapons()[0])
     hero.set_armed(true)
     _check(hero.armed and not hero.attack("punch"), "rifle drawn (melee disabled while armed)")
+    var muz: Vector3 = hero._gun.to_global(Vector3(0.0, 0.03, -0.9))
+    print("  debug rifle: yaw=%.2f muzzle=%s foe=%s visible=%s ko=%s" % [hero.yaw, muz, foe.global_position, foe.visible, foe.ko])
+    _check(hero._find_target(muz, hero._forward(), false) == foe, "rifle aims at a target 12 m away (cone check)")
     _check(hero.fire(), "rifle fires")
     _check(foe.health < 70.0, "rifle hits a target 12 m away (hp %.0f)" % foe.health)
     var mag := int(hero.weapon["mag"])
