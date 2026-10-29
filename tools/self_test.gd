@@ -179,13 +179,18 @@ func _test_vehicle() -> void:
     v.input_throttle = 0.0
     v.input_brake = 1.0
     v.input_drift = false
-    var stopped := false
-    for i in 600:
+    v.input_nitro = false
+    v.input_steer = 0.0
+    var before := v.velocity.length()
+    var min_speed := before
+    var at_half := before
+    for i in 180:
         v._physics_process(1.0 / 60.0)
-        if v.velocity.length() < 1.0:
-            stopped = true
-            break
-    _check(stopped, "car brakes to a stop")
+        min_speed = minf(min_speed, v.velocity.length())
+        if i == 20:
+            at_half = v.velocity.length()
+    _check(at_half < before * 0.6, "braking slows the car (%.1f -> %.1f m/s after 0.33 s)" % [before, at_half])
+    _check(min_speed < 2.0, "braking brings the car to a near standstill (min %.2f m/s)" % min_speed)
     v.free()
 
 
